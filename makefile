@@ -9,11 +9,19 @@ CFLAGS = -g -Wall
 # the output binary file
 # TARGET = parse-csv.cc
 
+# object files
+OBJS = parse-csv.o
+
 parse-csv : parse-csv.o
 	$(CC) $(CFLAGS) -o parse-csv parse-csv.o
 
-parse-csv.o : parse-csv.cc
+parse-csv.o : 
 	$(CC) $(CFLAGS) -c parse-csv.cc
 
+.PHONY : clean
+
+# removes non-source files
+# -f		ignores nonexistent files and arguments
+
 clean : 
-	rm parse-csv parse-csv.o
+	rm -f parse-csv $(OBJS)
