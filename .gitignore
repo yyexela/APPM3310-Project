@@ -33,3 +33,7 @@
 
 # VIM temporary files
 *.swp
+
+# CSV files
+sparse_matrix_coords_and_values.csv
+userID_map.csv
