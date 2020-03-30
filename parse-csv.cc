@@ -7,8 +7,8 @@
 using namespace std;
 
 // User amount
-//#define USERS 480189
-#define USERS 2649429
+#define USERS 480189
+//#define USERS 2649429
 
 // Node for linked-list for the user-item matrix
 struct cell{
@@ -28,8 +28,6 @@ void PrintCell(cell* cl);
 // Boolean used to print debug info
 const bool DEBUG = false;
 const bool DEBUG_UID = false;
-
-int item_counter = 0;
 
 // Files to read from
 //const string SPARSE_FILE = "InputCSV/ex_sparse.csv";
@@ -53,6 +51,8 @@ int main(int argc, char* argv[]){
 
     // ifs is used to read files
     ifstream ifs;
+    // string used to store lines
+    string line;
 
     cout << "Processing uid_map" << endl;
 
@@ -62,7 +62,6 @@ int main(int argc, char* argv[]){
         cout << "File \"" << UIDMAP_FILE << "\" failed to open" << endl;
     // Read file contents
     while(ifs.good()){
-        string line;
         getline(ifs, line);
         // Ignore empty lines
         if(line.size() > 0)
@@ -73,6 +72,8 @@ int main(int argc, char* argv[]){
     ifs.close();
 
     cout << "Processed uid_map" << endl;
+    duration = (std::clock() - start) / (double) CLOCKS_PER_SEC;
+    cout << "Time: " << duration << endl;
     cout << "Processing sparse_matrix file" << endl;
 
     // Open file, check if failed
@@ -81,7 +82,6 @@ int main(int argc, char* argv[]){
         cout << "File \"" << SPARSE_FILE << "\" failed to open" << endl;
     // Read file contents
     while(ifs.good()){
-        string line;
         getline(ifs, line);
         // Ignore empty lines
         if(line.size() > 0)
@@ -92,6 +92,8 @@ int main(int argc, char* argv[]){
     ifs.close();
 
     cout << "Processed sparse_matrix file" << endl;
+    duration = (std::clock() - start) / (double) CLOCKS_PER_SEC;
+    cout << "Time: " << duration << endl;
 
     PrintLLArr();
 
@@ -115,17 +117,12 @@ void PrintCell(cell* cl){
 }
 
 void UpdateUser(int uid, int item, int rating){
-    if(item - item_counter == 100){
-        cout << item << endl;
-        item_counter = item;
-    }
-
     //create the corresponding person
     cell* new_user = new cell();
-    new_user->rating = rating;
-    new_user->item = item;
-    new_user->next = NULL;
     new_user->uid = uid;
+    new_user->item = item;
+    new_user->rating = rating;
+    new_user->next = NULL;
 
     if(DEBUG) cout << "Adding user " << uid << ", item " << new_user->item << ", rating " << new_user->rating << endl;
 
@@ -145,13 +142,13 @@ void UpdateUser(int uid, int item, int rating){
         }
 
         while(  tmp->next != NULL && 
-                new_user->item > tmp->item){
+                new_user->item < tmp->item){
             tmp_prev = tmp;
             tmp = tmp->next;
             if(DEBUG) cout << "Iterated tmp" << endl;
         }
-        // tmp->next == NULL OR new_user->item < tmp->item
-        if(new_user->item < tmp->item){
+        // tmp->next == NULL OR new_user->item > tmp->item
+        if(new_user->item > tmp->item){
             //check if root was tmp
             if(tmp_prev == NULL){
                 if(DEBUG) cout << "Adding user as head (before tmp)" << endl;
@@ -159,13 +156,13 @@ void UpdateUser(int uid, int item, int rating){
                 user[uid] = new_user;
                 new_user->next = tmp;
             } else {
-                //set new_user between tmp_prev and tmp
-                if(DEBUG) cout << "Adding user before tmp and after tmp_prev" << endl;
-                tmp_prev->next = new_user;
-                new_user->next = tmp;
+                //set new_user after tmp
+                if(DEBUG) cout << "Adding user after tmp" << endl;
+                new_user->next = tmp->next;
+                tmp->next = new_user;
             }
         } else {
-            //set new_user as tail
+            // new_user->item <= tmp->item
             if(DEBUG) cout << "Adding user at end of LL" << endl;
             tmp->next = new_user;
             if(DEBUG){
@@ -201,15 +198,15 @@ void UIDMapLine(string line){
     // First number: User
     temp = line.substr(0, pos);
     if(DEBUG && DEBUG_UID) cout << "pos: " << pos << ", substr: \"" << temp << "\"" << endl;
-    uid_old = stoi(temp);
+    uid_new = stoi(temp);
 
     // Second number: Item
     temp = line.substr(pos + 1, line.size() - pos - 2);
     if(DEBUG && DEBUG_UID) cout << "pos: " << pos << ", substr: \"" << temp << "\"" << endl;
-    uid_new = stoi(temp);
+    uid_old = stoi(temp);
 
     // Insert into hash map
-    uid_map.insert(make_pair(uid_old,uid_new));
+    uid_map.insert(make_pair(uid_new,uid_new));
     if(DEBUG && DEBUG_UID) cout << "key " << uid_old << " value " << uid_map[uid_old] << endl << endl;
 }
 

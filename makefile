@@ -4,7 +4,7 @@ CC = g++
 # compiler flags:
 # -g		adds debug info
 # -Wall		Turns on optional warnings
-CFLAGS = -g -Wall
+CFLAGS = -g -Wall -Ofast
 
 # the output binary file
 # TARGET = parse-csv.cc
