@@ -95,7 +95,7 @@ int main(int argc, char* argv[]){
     duration = (std::clock() - start) / (double) CLOCKS_PER_SEC;
     cout << "Time: " << duration << endl;
 
-    PrintLLArr();
+    //PrintLLArr();
 
     cout << "Done processing" << endl;
     duration = (std::clock() - start) / (double) CLOCKS_PER_SEC;
