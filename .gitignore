@@ -32,7 +32,10 @@
 *.app
 
 # VIM temporary files
-*.swp
+*.sw
+
+# GDB stackdump
+*.stackdump
 
 # CSV files
 sparse_matrix_coords_and_values.csv
