@@ -189,6 +189,7 @@ void UpdateUser(int uid, int item, int rating){
             PrintCell(tmp);
         }
 
+        //iterate until tmp is tail OR tmp->item >= new_user->item
         while(  tmp->next != NULL && 
                 new_user->item < tmp->item){
             tmp_prev = tmp;
@@ -242,12 +243,12 @@ void UIDMapLine(string line){
     string temp;
 
 
-    // First number: User
+    // First number: original UID 
     temp = line.substr(0, pos);
     if(DEBUG && DEBUG_UID) cout << "pos: " << pos << ", substr: \"" << temp << "\"" << endl;
     uid_old = stoi(temp);
 
-    // Second number: Item
+    // Second number: updated UID
     temp = line.substr(pos + 1, line.size() - pos - 2);
     if(DEBUG && DEBUG_UID) cout << "pos: " << pos << ", substr: \"" << temp << "\"" << endl;
     uid_new = stoi(temp);
