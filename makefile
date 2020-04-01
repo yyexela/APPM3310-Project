@@ -15,7 +15,7 @@ OBJS = parse-csv.o
 parse-csv : parse-csv.o
 	$(CC) $(CFLAGS) -o parse-csv parse-csv.o
 
-parse-csv.o : 
+parse-csv.o : parse-csv.cc
 	$(CC) $(CFLAGS) -c parse-csv.cc
 
 .PHONY : clean
