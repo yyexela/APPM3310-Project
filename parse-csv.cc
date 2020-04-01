@@ -26,7 +26,9 @@ void UpdateUser(int uid, int item, int rating);
 void PrintLLArr();
 void PrintCell(cell* cl);
 unsigned int LLArrSize();
-void PrintTimestamp(clock_t start);
+void PrintTimestamp();
+int GetRating(int uid, int item);
+void ProcessFiles();
 
 // Boolean used to print debug info
 const bool DEBUG = false;
@@ -39,7 +41,11 @@ const string SPARSE_FILE = "InputCSV/sparse_matrix_coords_and_values.csv";
 const string UIDMAP_FILE = "InputCSV/userID_map.csv";
 
 // Hashmap for userID map
-unordered_map<int, int> uid_map;
+unordered_map<int, int> old2newuid_map;
+unordered_map<int, int> new2olduid_map;
+
+// Clock to check run-time
+clock_t start = std::clock();
 
 // User array of linked-lists
 cell* user[USERS];
@@ -48,15 +54,26 @@ int main(int argc, char* argv[]){
     string msg = "Running parse-csv.cc";
     cout << msg << endl;
 
-    // Clock to check run-time
-    clock_t start = std::clock();
+    ProcessFiles();
 
+    cout << "Sample ratings: " << endl;
+    cout << "user 22172 movie 1: " << GetRating(22172, 1) << endl; // should be 1
+    cout << "user 473001 movie 17770: " << GetRating(473001, 17770) << endl; //should be 1
+    cout << "user 205182 movie 10042: " << GetRating(205182, 10042) << endl; // should be 3
+}
+
+/*
+ * Processes the two CSV files SPARSE_FILE
+ * and UIDMAP_FILE and places it into
+ * the user[] array of linked-lists
+ */
+void ProcessFiles(){
     // ifs is used to read files
     ifstream ifs;
     // string used to store lines
     string line;
 
-    cout << "Processing uid_map" << endl;
+    cout << "Processing uid maps" << endl;
 
     // Open file, check if failed
     ifs.open(UIDMAP_FILE);
@@ -75,8 +92,8 @@ int main(int argc, char* argv[]){
     // Close UIDMAP_FILE
     ifs.close();
 
-    cout << "Processed uid_map, inserted " << uid_map.size() << " elements" << endl;
-    PrintTimestamp(start);
+    cout << "Processed uid maps, inserted " << old2newuid_map.size() << " elements" << endl;
+    PrintTimestamp();
     cout << "Processing sparse_matrix file" << endl;
 
     // Counts the number of lines processed
@@ -103,19 +120,42 @@ int main(int argc, char* argv[]){
 
     // Print statistics
     cout << "Processed sparse_matrix file, " << lines << " lines" << endl;
-    PrintTimestamp(start);
+    PrintTimestamp();
 
-    cout << "Processing LLArraySize: " << endl;
-    cout << LLArrSize() << endl;
+    unsigned int arr_size = LLArrSize();
+    if(arr_size != lines){
+        cout << "Error: mismatched lines between final users[] array and SPARSE_FILE" << endl;
+        cout << "    arr_size: " << arr_size << ", lines: " << lines << endl;
+    }
 
 }
 
 /*
  * Outputs the difference in current time and the time the function was called
  */
-void PrintTimestamp(clock_t start){
+void PrintTimestamp(){
     double duration = (std::clock() - start) / (double) CLOCKS_PER_SEC;
     cout << "Time: " << duration << endl;
+}
+
+/* 
+ * Returns the rating given a compact UID
+ * and a corresponding item
+ * 
+ * Returns -1 if the rating is not found
+ */
+int GetRating(int uid, int item){
+    // Check if it exists in the array
+    if(uid > USERS || uid < 1) return -1;
+    
+    // Loop through the array of linked-lists
+    cell* tmp = user[uid-1];
+    while(tmp != NULL && item <= tmp->item){
+        if(tmp->item == item) return tmp->rating;
+        tmp = tmp->next;
+    }
+    // Reached end of user's list
+    return -1;
 }
 
 /* 
@@ -254,8 +294,9 @@ void UIDMapLine(string line){
     uid_new = stoi(temp);
 
     // Insert into hash map
-    uid_map.insert(make_pair(uid_old,uid_new));
-    if(DEBUG && DEBUG_UID) cout << "key " << uid_old << " value " << uid_map[uid_old] << endl << endl;
+    old2newuid_map.insert(make_pair(uid_old,uid_new));
+    new2olduid_map.insert(make_pair(uid_new,uid_old));
+    if(DEBUG && DEBUG_UID) cout << "old uid " << uid_old << " new uid " << uid_new << endl << endl;
 }
 
 /* 
@@ -296,19 +337,9 @@ void SparseLine(string line){
     rating = stoi(temp);
 
     if(DEBUG && DEBUG_SPLINE) cout << "Parsed into: " << uid << "," << item << "," << rating << endl;
-    //if(DEBUG) cout << "uid " << uid << "->" << uid_map.at(uid) << endl;
-    //uid = uid_map.at(uid);
 
     if(!(uid > 0 && item > 0 && rating > 0)) cout << "Error on line, invalid uid/item/rating combo " << line << endl;
 
     // Update array
     UpdateUser(uid, item, rating);
-    /*
-    try{
-        UpdateUser(uid_map.at(uid), item, rating);
-    } catch (const out_of_range){
-        cout << "OOR exception hash map, invalid uid " << uid << endl;
-        exit(1);
-    }
-    */
 }
