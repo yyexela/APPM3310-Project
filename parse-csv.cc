@@ -7,9 +7,9 @@
 using namespace std;
 
 // User amount
-//#define USERS 480189
+#define USERS 480189
 //#define USERS 2649429
-#define USERS 1
+//#define USERS 1
 
 // Node for linked-list for the user-item matrix
 struct cell{
@@ -35,8 +35,8 @@ const bool DEBUG_SPLINE = false;
 const bool DEBUG_UPDATE_USER = false;
 
 // Files to read from
-const string SPARSE_FILE = "InputCSV/testsparse_matrix_coords_and_values.csv";
-const string UIDMAP_FILE = "InputCSV/testuserID_map.csv";
+const string SPARSE_FILE = "InputCSV/sparse_matrix_coords_and_values.csv";
+const string UIDMAP_FILE = "InputCSV/userID_map.csv";
 
 // Hashmap for userID map
 unordered_map<int, int> uid_map;
@@ -302,10 +302,13 @@ void SparseLine(string line){
     if(!(uid > 0 && item > 0 && rating > 0)) cout << "Error on line, invalid uid/item/rating combo " << line << endl;
 
     // Update array
+    UpdateUser(uid, item, rating);
+    /*
     try{
         UpdateUser(uid_map.at(uid), item, rating);
     } catch (const out_of_range){
         cout << "OOR exception hash map, invalid uid " << uid << endl;
         exit(1);
     }
+    */
 }
