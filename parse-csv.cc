@@ -4,14 +4,7 @@
 
 using namespace std;
 
-int main(int argc, char* argv[]){
-    string msg = "Running parse-csv.cc";
-    cout << msg << endl;
-
-    ProcessFiles();
-
-    TestSample();
-}
+extern Parse parse_vars;
 
 /*
  * Checks 10 random sample values to see if they exist in
@@ -91,7 +84,7 @@ void ProcessFiles(){
     // Close UIDMAP_FILE
     ifs.close();
 
-    cout << "Processed uid maps, inserted " << old2newuid_map.size() << " elements" << endl;
+    cout << "Processed uid maps, inserted " << parse_vars.old2newuid_map.size() << " elements" << endl;
     PrintTimestamp();
     cout << "Processing sparse_matrix file" << endl;
 
@@ -133,7 +126,7 @@ void ProcessFiles(){
  * Outputs the difference in current time and the time the function was called
  */
 void PrintTimestamp(){
-    double duration = (std::clock() - start) / (double) CLOCKS_PER_SEC;
+    double duration = (std::clock() - parse_vars.start) / (double) CLOCKS_PER_SEC;
     cout << "Time: " << duration << endl;
 }
 
@@ -148,7 +141,7 @@ int GetRating(int uid, int item){
     if(item > ITEMS || item < 1) return -1;
     
     // Loop through the array of linked-lists
-    cell* tmp = items[item-1];
+    cell* tmp = parse_vars.items[item-1];
     while(tmp != NULL && item <= tmp->uid){
         if(tmp->uid == uid) return tmp->rating;
         tmp = tmp->next;
@@ -164,7 +157,7 @@ int GetRating(int uid, int item){
 unsigned int LLArrSize(){
     unsigned int size = 0;
     for(int i = 0; i < ITEMS; ++i){
-        cell* tmp = items[i];
+        cell* tmp = parse_vars.items[i];
         while(tmp != NULL){
             ++size;
             tmp = tmp->next;
@@ -179,7 +172,7 @@ unsigned int LLArrSize(){
  */
 void PrintLLArr(){
     for(int i = 0; i < ITEMS; ++i){
-        cell* tmp = items[i];
+        cell* tmp = parse_vars.items[i];
         cout << endl;
         while(tmp != NULL){
             PrintCell(tmp);
@@ -214,13 +207,13 @@ void UpdateLLArr(int uid, int item, int rating){
     }
 
     //check if root is null
-    if(items[item-1] == NULL){
+    if(parse_vars.items[item-1] == NULL){
         //add user as head
         if(DEBUG && DEBUG_UPDATE_USER) cout << "Adding cell as head (null LL)" << endl;
-        items[item-1] = new_cell;
+        parse_vars.items[item-1] = new_cell;
     } else {
         //there exists a linkedlist, traverse until item is between 2 or last
-        cell* tmp = items[item-1];
+        cell* tmp = parse_vars.items[item-1];
         cell* tmp_prev = NULL;
 
         if(DEBUG && DEBUG_UPDATE_USER){
@@ -241,7 +234,7 @@ void UpdateLLArr(int uid, int item, int rating){
             if(tmp_prev == NULL){
                 if(DEBUG && DEBUG_UPDATE_USER) cout << "Adding cell as head (before tmp)" << endl;
                 //set new_cell as head
-                items[item-1] = new_cell;
+                parse_vars.items[item-1] = new_cell;
                 new_cell->next = tmp;
             } else {
                 //set new_cell after tmp
@@ -293,8 +286,8 @@ void UIDMapLine(string line){
     uid_new = stoi(temp);
 
     // Insert into hash map
-    old2newuid_map.insert(make_pair(uid_old,uid_new));
-    new2olduid_map.insert(make_pair(uid_new,uid_old));
+    parse_vars.old2newuid_map.insert(make_pair(uid_old,uid_new));
+    parse_vars.new2olduid_map.insert(make_pair(uid_new,uid_old));
     if(DEBUG && DEBUG_UID) cout << "old uid " << uid_old << " new uid " << uid_new << endl << endl;
 }
 

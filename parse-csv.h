@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _parse_csv_h
+#define _parse_csv_h
 
 #include <string>
 #include <unordered_map>
@@ -8,6 +9,7 @@ using namespace std;
 
 // User amount
 #define ITEMS 17770
+
 
 // Node for linked-list for the user-item matrix
 struct cell{
@@ -39,12 +41,19 @@ const bool DEBUG_UPDATE_USER = false;
 const string SPARSE_FILE = "InputCSV/sparse_matrix_coords_and_values.csv";
 const string UIDMAP_FILE = "InputCSV/userID_map.csv";
 
-// Hashmap for userID map
-unordered_map<int, int> old2newuid_map;
-unordered_map<int, int> new2olduid_map;
+class Parse{
+    public:
+    // Hashmap for userID map
+    typedef unordered_map<int, int> uid_map_t;
+    uid_map_t old2newuid_map;
+    uid_map_t new2olduid_map;
 
-// Clock to check run-time
-clock_t start = std::clock();
+    // Clock to check run-time
+    clock_t start = std::clock();
 
-// User array of linked-lists
-cell* items[ITEMS];
+    // User array of linked-lists
+    cell* items[ITEMS];
+
+};
+
+#endif

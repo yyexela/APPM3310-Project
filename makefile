@@ -10,13 +10,16 @@ CFLAGS = -Og -g -Wall
 # TARGET = parse-csv.cc
 
 # object files
-OBJS = parse-csv.o
+OBJS = parse-csv.o factorize.o
 
-parse-csv : parse-csv.o
-	$(CC) $(CFLAGS) -o parse-csv parse-csv.o
+factorize : parse-csv.o factorize.o
+	$(CC) $(CFLAGS) -o factorize factorize.o parse-csv.o
 
 parse-csv.o : parse-csv.cc parse-csv.h
 	$(CC) $(CFLAGS) -c parse-csv.cc
+
+factorize.o : factorize.cc
+	$(CC) $(CFLAGS) -c factorize.cc
 
 .PHONY : clean
 
@@ -24,4 +27,4 @@ parse-csv.o : parse-csv.cc parse-csv.h
 # -f		ignores nonexistent files and arguments
 
 clean : 
-	rm -f parse-csv $(OBJS)
+	rm -f factorize $(OBJS)
