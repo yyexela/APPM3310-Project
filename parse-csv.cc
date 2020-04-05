@@ -62,6 +62,7 @@ bool TestSample(){
 void ProcessFiles(){
     string msg = "Running parse-csv.cc";
     cout << msg << endl;
+    cout << "" << endl;
 
     // ifs is used to read files
     ifstream ifs;
@@ -89,6 +90,7 @@ void ProcessFiles(){
 
     cout << "Processed uid maps, inserted " << parse_vars.old2newuid_map.size() << " elements" << endl;
     PrintTimestamp();
+    cout << "" << endl;
     cout << "Processing sparse_matrix file" << endl;
 
     // Counts the number of lines processed
@@ -116,6 +118,7 @@ void ProcessFiles(){
     // Print statistics
     cout << "Processed sparse_matrix file, " << lines << " lines" << endl;
     PrintTimestamp();
+    cout << "" << endl;
     cout << "Running tests to ensure file transfer was correct" << endl;
 
     unsigned int arr_size = LLArrSize();
@@ -131,14 +134,17 @@ void ProcessFiles(){
 
     cout << "File read process complete" << endl;
     PrintTimestamp();
+    cout << "" << endl;
 }
 
 /*
  * Outputs the difference in current time and the time the function was called
  */
 void PrintTimestamp(){
-    double duration = (std::clock() - parse_vars.start) / (double) CLOCKS_PER_SEC;
-    cout << "Time: " << duration << "s" << endl;
+    clock_t curr_time = std::clock();
+    cout << "Time: " << (curr_time - parse_vars.start) / (double) CLOCKS_PER_SEC << "s" << endl;
+    cout << "Difference : " << (curr_time - parse_vars.prev_time) / (double) CLOCKS_PER_SEC << "s" << endl;
+    parse_vars.prev_time = curr_time;
 }
 
 /* 

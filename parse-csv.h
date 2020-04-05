@@ -48,6 +48,7 @@ class Parse{
 
     // Clock to check run-time
     clock_t start = std::clock();
+    clock_t prev_time = start;
 
     // User array of linked-lists
     cell* items[ITEMS];

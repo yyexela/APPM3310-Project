@@ -19,22 +19,14 @@ int main(int argc, char* argv[]){
     // Initialize user/item feature vectors
     cout << "Initializing user/item feature vectors" << endl;
     FeatureInit();
-    cout << "Vectors Initialized" << endl;
     PrintTimestamp();
+    cout << "" << endl;
 
-    cout << "Training round " << 1 << endl;
-    Train();
-    cout << "Done" << endl;
-    PrintTimestamp();
-    cout << "Training round " << 2 << endl;
-    Train();
-    cout << "Done" << endl;
-    PrintTimestamp();
-    for(int i = 3; i < 1000; ++i){
+    for(int i = 0; i < 1000; ++i){
         cout << "Training round " << i << endl;
         Train();
-        cout << "Done" << endl;
         PrintTimestamp();
+        cout << "" << endl;
     }
 }
 
@@ -44,19 +36,22 @@ int main(int argc, char* argv[]){
  */
 void Train(){
     double err, u_old;
+    int item, uid, rating;
 
     for(int i = 0; i < ITEMS; ++i){
         cell* tmp = parse_vars.items[i];
         while(tmp != NULL){
-            int item = tmp->item;
-            int uid = tmp->uid;
-            int rating = tmp->rating;
+            item = tmp->item;
+            uid = tmp->uid;
+            rating = tmp->rating;
+
+            err = rating - PredictRating(uid, item);
 
             for(int ftr = 0; ftr < FEATURES; ++ftr){
-                err = rating - PredictRating(uid, item);
                 u_old = factorize_vars.user_f[uid-1][ftr];
                 factorize_vars.user_f[uid-1][ftr] += lrate * (err * factorize_vars.item_f[item-1][ftr] - K * u_old);
                 factorize_vars.item_f[item-1][ftr] += lrate * (err * u_old - K * factorize_vars.item_f[item-1][ftr]);
+
             }
 
             tmp = tmp->next;
@@ -70,11 +65,11 @@ void Train(){
  * vectors
  */
 double PredictRating(int uid, int item){
-    double sum = 0;
-    for(int i = 0; i < FEATURES; ++i){
-        sum += factorize_vars.item_f[item-1][i] * factorize_vars.user_f[uid-1][i];
+    double sum1 = 0;
+    for(int i = 0; i < FEATURES; i++){
+        sum1 = sum1 + (factorize_vars.item_f[item-1][i] * factorize_vars.user_f[uid-1][i]);
     }
-    return sum;
+    return (sum1);
 }
 
 /*
