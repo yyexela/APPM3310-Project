@@ -22,12 +22,11 @@ int main(int argc, char* argv[]){
     PrintTimestamp();
     cout << "" << endl;
 
-    for(int i = 0; i < 1000; ++i){
-        cout << "Training round " << i << endl;
-        Train();
-        PrintTimestamp();
-        cout << "" << endl;
-    }
+    cout << "Training the data" << endl;
+    Train();
+    cout << "Done training the data" << endl;
+    PrintTimestamp();
+    cout << "" << endl;
 }
 
 /*
@@ -35,8 +34,9 @@ int main(int argc, char* argv[]){
  * on updating a feature before moving onto the next
  */
 void Train(){
-    double err, u_old;
+    double err, old_err, u_old;
     int item, uid, rating;
+    int iters;
 
     for(int i = 0; i < ITEMS; ++i){
         cell* tmp = parse_vars.items[i];
@@ -45,17 +45,25 @@ void Train(){
             uid = tmp->uid;
             rating = tmp->rating;
 
-            err = rating - PredictRating(uid, item);
+            err = 1;
+            old_err = -1;
 
-            for(int ftr = 0; ftr < FEATURES; ++ftr){
-                u_old = factorize_vars.user_f[uid-1][ftr];
-                factorize_vars.user_f[uid-1][ftr] += lrate * (err * factorize_vars.item_f[item-1][ftr] - K * u_old);
-                factorize_vars.item_f[item-1][ftr] += lrate * (err * u_old - K * factorize_vars.item_f[item-1][ftr]);
+            while(err != old_err){
+                old_err = err;
+                err = rating - PredictRating(uid, item);
+                for(int ftr = 0; ftr < FEATURES; ++ftr){
+                    u_old = factorize_vars.user_f[uid-1][ftr];
+                    factorize_vars.user_f[uid-1][ftr] += lrate * (err * factorize_vars.item_f[item-1][ftr] - K * u_old);
+                    factorize_vars.item_f[item-1][ftr] += lrate * (err * u_old - K * factorize_vars.item_f[item-1][ftr]);
 
+                }
+                iters++;
             }
-
             tmp = tmp->next;
         }
+        cout << "item " << i+1 << endl;
+        PrintTimestamp();
+        cout << " " << endl;
     }
 }
 
