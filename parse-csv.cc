@@ -7,9 +7,8 @@
 using namespace std;
 
 // User amount
-#define USERS 480189
-//#define USERS 2649429
-//#define USERS 1
+#define ITEMS 17770
+//#define USERS 480189
 
 // Node for linked-list for the user-item matrix
 struct cell{
@@ -22,13 +21,14 @@ struct cell{
 // Forward declarations
 void SparseLine(string line);
 void UIDMapLine(string line);
-void UpdateUser(int uid, int item, int rating);
+void UpdateLLArr(int uid, int item, int rating);
 void PrintLLArr();
 void PrintCell(cell* cl);
 unsigned int LLArrSize();
 void PrintTimestamp();
 int GetRating(int uid, int item);
 void ProcessFiles();
+bool TestSample();
 
 // Boolean used to print debug info
 const bool DEBUG = false;
@@ -48,7 +48,7 @@ unordered_map<int, int> new2olduid_map;
 clock_t start = std::clock();
 
 // User array of linked-lists
-cell* user[USERS];
+cell* items[ITEMS];
 
 int main(int argc, char* argv[]){
     string msg = "Running parse-csv.cc";
@@ -56,10 +56,55 @@ int main(int argc, char* argv[]){
 
     ProcessFiles();
 
-    cout << "Sample ratings: " << endl;
-    cout << "user 22172 movie 1: " << GetRating(22172, 1) << endl; // should be 1
-    cout << "user 473001 movie 17770: " << GetRating(473001, 17770) << endl; //should be 1
-    cout << "user 205182 movie 10042: " << GetRating(205182, 10042) << endl; // should be 3
+    TestSample();
+}
+
+/*
+ * Checks 10 random sample values to see if they exist in
+ * the created linked-list array
+ */
+bool TestSample(){
+    if(GetRating(407948, 2001) != 3){
+        cout << "TestSample failed: uid " << 407948 << " item " << 2001 << endl;
+        return false;
+    }
+    if(GetRating(188863, 10852) != 5){
+        cout << "TestSample failed: uid " << 188863 << " item " << 10852 << endl;
+        return false;
+    }
+    if(GetRating(65600, 14968) != 5){
+        cout << "TestSample failed: uid " << 65600 << " item " << 14968 << endl;
+        return false;
+    }
+    if(GetRating(306405, 8782) != 2){
+        cout << "TestSample failed: uid " << 306405 << " item " << 8782 << endl;
+        return false;
+    }
+    if(GetRating(193667, 16784) != 5){
+        cout << "TestSample failed: uid " << 193667 << " item " << 16784 << endl;
+        return false;
+    }
+    if(GetRating(353047, 1976) != 2){
+        cout << "TestSample failed: uid " << 353047 << " item " << 1976 << endl;
+        return false;
+    }
+    if(GetRating(451987, 11446) != 3){
+        cout << "TestSample failed: uid " << 451987 << " item " << 11446 << endl;
+        return false;
+    }
+    if(GetRating(189727, 1180) != 4){
+        cout << "TestSample failed: uid " << 189727 << " item " << 1180 << endl;
+        return false;
+    }
+    if(GetRating(156529, 2751) != 5){
+        cout << "TestSample failed: uid " << 156529 << " item " << 2751 << endl;
+        return false;
+    }
+    if(GetRating(92710, 16730) != 3){
+        cout << "TestSample failed: uid " << 92710 << " item " << 16730 << endl;
+        return false;
+    }
+    return true;
 }
 
 /*
@@ -124,7 +169,7 @@ void ProcessFiles(){
 
     unsigned int arr_size = LLArrSize();
     if(arr_size != lines){
-        cout << "Error: mismatched lines between final users[] array and SPARSE_FILE" << endl;
+        cout << "Error: mismatched lines between final items[] array and SPARSE_FILE" << endl;
         cout << "    arr_size: " << arr_size << ", lines: " << lines << endl;
     }
 
@@ -146,26 +191,26 @@ void PrintTimestamp(){
  */
 int GetRating(int uid, int item){
     // Check if it exists in the array
-    if(uid > USERS || uid < 1) return -1;
+    if(item > ITEMS || item < 1) return -1;
     
     // Loop through the array of linked-lists
-    cell* tmp = user[uid-1];
-    while(tmp != NULL && item <= tmp->item){
-        if(tmp->item == item) return tmp->rating;
+    cell* tmp = items[item-1];
+    while(tmp != NULL && item <= tmp->uid){
+        if(tmp->uid == uid) return tmp->rating;
         tmp = tmp->next;
     }
-    // Reached end of user's list
+    // Reached end of item's list
     return -1;
 }
 
 /* 
- * Outputs the number of indifidual cells in the
+ * Outputs the number of individual cells in the
  * Linked-List array
  */
 unsigned int LLArrSize(){
     unsigned int size = 0;
-    for(int i = 0; i < USERS; ++i){
-        cell* tmp = user[i];
+    for(int i = 0; i < ITEMS; ++i){
+        cell* tmp = items[i];
         while(tmp != NULL){
             ++size;
             tmp = tmp->next;
@@ -175,12 +220,12 @@ unsigned int LLArrSize(){
 }
 
 /* 
- * Prints each cell in the, with padding
+ * Prints each cell in the array with padding
  * Linked-List array
  */
 void PrintLLArr(){
-    for(int i = 0; i < USERS; ++i){
-        cell* tmp = user[i];
+    for(int i = 0; i < ITEMS; ++i){
+        cell* tmp = items[i];
         cout << endl;
         while(tmp != NULL){
             PrintCell(tmp);
@@ -194,34 +239,34 @@ void PrintLLArr(){
  * Prints a given cell's values
  */
 void PrintCell(cell* cl){
-    cout << "user " << cl->uid << ", movie " << cl->item << ", rating " << cl->rating << endl;
+    cout << "item" << cl->item << ", user " << cl->uid << ", rating " << cl->rating << endl;
 }
 
 /*
- * Adds a cell to the user[] array and
+ * Adds a cell to the items[] array and
  * corresponding linked-list
  */
-void UpdateUser(int uid, int item, int rating){
-    //create the corresponding person
-    cell* new_user = new cell();
-    new_user->uid = uid;
-    new_user->item = item;
-    new_user->rating = rating;
-    new_user->next = NULL;
+void UpdateLLArr(int uid, int item, int rating){
+    //create the corresponding cell
+    cell* new_cell = new cell();
+    new_cell->uid = uid;
+    new_cell->item = item;
+    new_cell->rating = rating;
+    new_cell->next = NULL;
 
-    if(DEBUG && DEBUG_UPDATE_USER) cout << "Adding user " << uid << ", item " << new_user->item << ", rating " << new_user->rating << endl;
+    if(DEBUG && DEBUG_UPDATE_USER) cout << "Adding cell | uid:" << uid << ", item " << item << ", rating " << rating << endl;
     if(DEBUG && DEBUG_UPDATE_USER){
         PrintLLArr();
     }
 
     //check if root is null
-    if(user[uid-1] == NULL){
+    if(items[item-1] == NULL){
         //add user as head
-        if(DEBUG && DEBUG_UPDATE_USER) cout << "Adding user as head (null LL)" << endl;
-        user[uid-1] = new_user;
+        if(DEBUG && DEBUG_UPDATE_USER) cout << "Adding cell as head (null LL)" << endl;
+        items[item-1] = new_cell;
     } else {
         //there exists a linkedlist, traverse until item is between 2 or last
-        cell* tmp = user[uid-1];
+        cell* tmp = items[item-1];
         cell* tmp_prev = NULL;
 
         if(DEBUG && DEBUG_UPDATE_USER){
@@ -229,33 +274,33 @@ void UpdateUser(int uid, int item, int rating){
             PrintCell(tmp);
         }
 
-        //iterate until tmp is tail OR tmp->item >= new_user->item
+        //iterate until tmp is tail OR tmp->item >= new_cell->item
         while(  tmp->next != NULL && 
-                new_user->item < tmp->item){
+                new_cell->uid < tmp->uid){
             tmp_prev = tmp;
             tmp = tmp->next;
             if(DEBUG && DEBUG_UPDATE_USER) cout << "Iterated tmp" << endl;
         }
 
-        if(new_user->item > tmp->item){
+        if(new_cell->uid > tmp->uid){
             //check if root was tmp
             if(tmp_prev == NULL){
-                if(DEBUG && DEBUG_UPDATE_USER) cout << "Adding user as head (before tmp)" << endl;
-                //set new_user as head
-                user[uid-1] = new_user;
-                new_user->next = tmp;
+                if(DEBUG && DEBUG_UPDATE_USER) cout << "Adding cell as head (before tmp)" << endl;
+                //set new_cell as head
+                items[item-1] = new_cell;
+                new_cell->next = tmp;
             } else {
-                //set new_user after tmp
-                if(DEBUG && DEBUG_UPDATE_USER) cout << "Adding user before tmp, after tmp_prev" << endl;
-                new_user->next = tmp_prev->next;
-                tmp_prev->next = new_user;
+                //set new_cell after tmp
+                if(DEBUG && DEBUG_UPDATE_USER) cout << "Adding cell before tmp, after tmp_prev" << endl;
+                new_cell->next = tmp_prev->next;
+                tmp_prev->next = new_cell;
             }
         } else {
-            // new_user->item <= tmp->item
+            // new_cell->item <= tmp->item
             // accounts for it tmp is the tail of the linked list
             if(DEBUG && DEBUG_UPDATE_USER) cout << "Adding user after tmp" << endl;
-            new_user->next = tmp->next;
-            tmp->next = new_user;
+            new_cell->next = tmp->next;
+            tmp->next = new_cell;
         }
     }
 
@@ -303,7 +348,7 @@ void UIDMapLine(string line){
  * Reads a line and inserts the values into an array of size M x N
  * Line must be formatted like this; X,Y,Z
  * Where X is the item, Y is the user ID, and Z is the corresponding rating
- * Calls UpdateUser to update the user[] array of linked-lists with the newly parsed values
+ * Calls UpdateLLArr to update the user[] array of linked-lists with the newly parsed values
  */
 void SparseLine(string line){
     // Position of current comma and the next comma
@@ -341,5 +386,5 @@ void SparseLine(string line){
     if(!(uid > 0 && item > 0 && rating > 0)) cout << "Error on line, invalid uid/item/rating combo " << line << endl;
 
     // Update array
-    UpdateUser(uid, item, rating);
+    UpdateLLArr(uid, item, rating);
 }
