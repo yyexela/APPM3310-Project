@@ -15,10 +15,10 @@ OBJS = parse-csv.o factorize.o
 factorize : parse-csv.o factorize.o
 	$(CC) $(CFLAGS) -o factorize factorize.o parse-csv.o
 
-parse-csv.o : parse-csv.cc parse-csv.h
+parse-csv.o : parse-csv.cc parse-csv.h globals.h
 	$(CC) $(CFLAGS) -c parse-csv.cc
 
-factorize.o : factorize.cc
+factorize.o : factorize.cc factorize.h globals.h
 	$(CC) $(CFLAGS) -c factorize.cc
 
 .PHONY : clean

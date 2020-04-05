@@ -1,15 +1,13 @@
 #ifndef _parse_csv_h
 #define _parse_csv_h
 
+#include "globals.h"
+
 #include <string>
 #include <unordered_map>
 #include <ctime>
 
 using namespace std;
-
-// User amount
-#define ITEMS 17770
-
 
 // Node for linked-list for the user-item matrix
 struct cell{
@@ -31,7 +29,7 @@ int GetRating(int uid, int item);
 void ProcessFiles();
 bool TestSample();
 
-// Boolean used to print debug info
+// Booleans used to print debug info
 const bool DEBUG = false;
 const bool DEBUG_UID = false;
 const bool DEBUG_SPLINE = false;
