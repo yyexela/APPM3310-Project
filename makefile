@@ -4,6 +4,7 @@ CC = g++
 # compiler flags:
 # -g		adds debug info
 # -Wall		Turns on optional warnings
+# CFLAGS = -Ofast -g -Wall -march=native -mtune=native -mavx2 -funroll-loops -funswitch-loops -Wunsafe-loop-optimizations
 CFLAGS = -Og -g -Wall
 
 # the output binary file

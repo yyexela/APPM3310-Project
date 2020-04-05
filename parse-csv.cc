@@ -60,6 +60,9 @@ bool TestSample(){
  * the user[] array of linked-lists
  */
 void ProcessFiles(){
+    string msg = "Running parse-csv.cc";
+    cout << msg << endl;
+
     // ifs is used to read files
     ifstream ifs;
     // string used to store lines
@@ -113,6 +116,7 @@ void ProcessFiles(){
     // Print statistics
     cout << "Processed sparse_matrix file, " << lines << " lines" << endl;
     PrintTimestamp();
+    cout << "Running tests to ensure file transfer was correct" << endl;
 
     unsigned int arr_size = LLArrSize();
     if(arr_size != lines){
@@ -120,6 +124,13 @@ void ProcessFiles(){
         cout << "    arr_size: " << arr_size << ", lines: " << lines << endl;
     }
 
+    if(!TestSample()){
+        cout << "User-Item-Rating mismatch, exiting" << endl;
+        exit(1);
+    }
+
+    cout << "File read process complete" << endl;
+    PrintTimestamp();
 }
 
 /*
@@ -127,7 +138,7 @@ void ProcessFiles(){
  */
 void PrintTimestamp(){
     double duration = (std::clock() - parse_vars.start) / (double) CLOCKS_PER_SEC;
-    cout << "Time: " << duration << endl;
+    cout << "Time: " << duration << "s" << endl;
 }
 
 /* 
