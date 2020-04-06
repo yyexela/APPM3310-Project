@@ -8,6 +8,8 @@
 #define FEATURE_INIT 0.1
 
 // Number of unique items and users
+//#define ITEMS 9
+//#define USERS 3
 #define ITEMS 17770
 #define USERS 480189
 

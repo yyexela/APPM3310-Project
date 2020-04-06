@@ -20,13 +20,14 @@ OBJS = parse-csv.o factorize.o
 # Make sure -I points to the root directory of boost and -L points to the /stage/lib directory and -l is the serialization library
 
 factorize : parse-csv.o factorize.o
-	$(CC) $(CFLAGS) -I /home/alexe/boost/boost_1_72_0 -o factorize factorize.o parse-csv.o -L/home/alexe/boost/boost_1_72_0/stage/lib/ -llibboost_serialization
+	$(CC) $(CFLAGS) -o factorize factorize.o parse-csv.o ~/boost/boost_1_72_0/stage/lib/libboost_serialization.a
 
 parse-csv.o : parse-csv.cc parse-csv.h globals.h
 	$(CC) $(CFLAGS) -c parse-csv.cc
 
 factorize.o : factorize.cc factorize.h globals.h
-	$(CC) $(CFLAGS) -c factorize.cc
+	$(CC) $(CFLAGS) -I ~/boost/boost_1_72_0 -c factorize.cc
+#	$(CC) $(CFLAGS) -c factorize.cc
 
 .PHONY : clean
 
