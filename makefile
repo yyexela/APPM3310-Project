@@ -16,8 +16,7 @@ CFLAGS = -Ofast -g -Wall -march=native -mtune=native -funroll-loops -funswitch-l
 OBJS = parse-csv.o factorize.o
 
 # Working linking compilation
-# g++ -I /home/alexe/boost/boost_1_72_0/ demo.cpp -o demo -L/home/alexe/boost/boost_1_72_0/stage/lib/ -llibboost_serialization
-# Make sure -I points to the root directory of boost and -L points to the /stage/lib directory and -l is the serialization library
+# Include the /boost library in your home folder
 
 factorize : parse-csv.o factorize.o
 	$(CC) $(CFLAGS) -o factorize factorize.o parse-csv.o ~/boost/boost_1_72_0/stage/lib/libboost_serialization.a
