@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include "parse-csv.h"
 #include "factorize.h"
 
@@ -15,18 +16,33 @@ int main(int argc, char* argv[]){
     // Load in the files
     ProcessFiles();
     
-    // Stochastic Gradient Descent
     // Initialize user/item feature vectors
     cout << "Initializing user/item feature vectors" << endl;
     FeatureInit();
     PrintTimestamp();
     cout << "" << endl;
 
+    // Stochastic Gradient Descent
     cout << "Training the data" << endl;
     Train();
     cout << "Done training the data" << endl;
     PrintTimestamp();
     cout << "" << endl;
+
+
+    cout << "Serializing the data to \"serialized\"" << endl;
+    PrintTimestamp();
+    cout << "" << endl;
+
+    // Serialize the data so it isn't lost
+    {
+            ofstream ofs("serialized");
+            boost::archive::text_oarchive oa(ofs);
+            oa << factorize_vars;
+    }
+
+    cout << "Program finished, exiting" << endl;
+    PrintTimestamp();
 }
 
 /*

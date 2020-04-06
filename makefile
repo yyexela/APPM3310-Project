@@ -15,8 +15,12 @@ CFLAGS = -Ofast -g -Wall -march=native -mtune=native -funroll-loops -funswitch-l
 # object files
 OBJS = parse-csv.o factorize.o
 
+# Working linking compilation
+# g++ -I /home/alexe/boost/boost_1_72_0/ demo.cpp -o demo -L/home/alexe/boost/boost_1_72_0/stage/lib/ -llibboost_serialization
+# Make sure -I points to the root directory of boost and -L points to the /stage/lib directory and -l is the serialization library
+
 factorize : parse-csv.o factorize.o
-	$(CC) $(CFLAGS) -o factorize factorize.o parse-csv.o
+	$(CC) $(CFLAGS) -I /home/alexe/boost/boost_1_72_0 -o factorize factorize.o parse-csv.o -L/home/alexe/boost/boost_1_72_0/stage/lib/ -llibboost_serialization
 
 parse-csv.o : parse-csv.cc parse-csv.h globals.h
 	$(CC) $(CFLAGS) -c parse-csv.cc

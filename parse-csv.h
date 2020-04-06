@@ -33,7 +33,8 @@ bool TestSample();
 const bool DEBUG = false;
 const bool DEBUG_UID = false;
 const bool DEBUG_SPLINE = false;
-const bool DEBUG_UPDATE_USER = false;
+const bool DEBUG_UPDATE_LLARR = false;
+const bool DISABLE_CHECKS = false;
 
 // Files to read from
 const string SPARSE_FILE = "InputCSV/sparse_matrix_coords_and_values.csv";

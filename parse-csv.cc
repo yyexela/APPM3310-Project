@@ -118,18 +118,21 @@ void ProcessFiles(){
     // Print statistics
     cout << "Processed sparse_matrix file, " << lines << " lines" << endl;
     PrintTimestamp();
-    cout << "" << endl;
-    cout << "Running tests to ensure file transfer was correct" << endl;
 
-    unsigned int arr_size = LLArrSize();
-    if(arr_size != lines){
-        cout << "Error: mismatched lines between final items[] array and SPARSE_FILE" << endl;
-        cout << "    arr_size: " << arr_size << ", lines: " << lines << endl;
-    }
+    if(!DISABLE_CHECKS){
+        cout << "" << endl;
+        cout << "Running tests to ensure file transfer was correct" << endl;
 
-    if(!TestSample()){
-        cout << "User-Item-Rating mismatch, exiting" << endl;
-        exit(1);
+        unsigned int arr_size = LLArrSize();
+        if(arr_size != lines){
+            cout << "Error: mismatched lines between final items[] array and SPARSE_FILE" << endl;
+            cout << "    arr_size: " << arr_size << ", lines: " << lines << endl;
+        }
+
+        if(!TestSample()){
+            cout << "User-Item-Rating mismatch, exiting" << endl;
+            exit(1);
+        }
     }
 
     cout << "File read process complete" << endl;
@@ -218,22 +221,22 @@ void UpdateLLArr(int uid, int item, int rating){
     new_cell->rating = rating;
     new_cell->next = NULL;
 
-    if(DEBUG && DEBUG_UPDATE_USER) cout << "Adding cell | uid:" << uid << ", item " << item << ", rating " << rating << endl;
-    if(DEBUG && DEBUG_UPDATE_USER){
+    if(DEBUG && DEBUG_UPDATE_LLARR) cout << "Adding cell | uid:" << uid << ", item " << item << ", rating " << rating << endl;
+    if(DEBUG && DEBUG_UPDATE_LLARR){
         PrintLLArr();
     }
 
     //check if root is null
     if(parse_vars.items[item-1] == NULL){
         //add user as head
-        if(DEBUG && DEBUG_UPDATE_USER) cout << "Adding cell as head (null LL)" << endl;
+        if(DEBUG && DEBUG_UPDATE_LLARR) cout << "Adding cell as head (null LL)" << endl;
         parse_vars.items[item-1] = new_cell;
     } else {
         //there exists a linkedlist, traverse until item is between 2 or last
         cell* tmp = parse_vars.items[item-1];
         cell* tmp_prev = NULL;
 
-        if(DEBUG && DEBUG_UPDATE_USER){
+        if(DEBUG && DEBUG_UPDATE_LLARR){
             cout << "Initial tmp: ";
             PrintCell(tmp);
         }
@@ -243,32 +246,32 @@ void UpdateLLArr(int uid, int item, int rating){
                 new_cell->uid < tmp->uid){
             tmp_prev = tmp;
             tmp = tmp->next;
-            if(DEBUG && DEBUG_UPDATE_USER) cout << "Iterated tmp" << endl;
+            if(DEBUG && DEBUG_UPDATE_LLARR) cout << "Iterated tmp" << endl;
         }
 
         if(new_cell->uid > tmp->uid){
             //check if root was tmp
             if(tmp_prev == NULL){
-                if(DEBUG && DEBUG_UPDATE_USER) cout << "Adding cell as head (before tmp)" << endl;
+                if(DEBUG && DEBUG_UPDATE_LLARR) cout << "Adding cell as head (before tmp)" << endl;
                 //set new_cell as head
                 parse_vars.items[item-1] = new_cell;
                 new_cell->next = tmp;
             } else {
                 //set new_cell after tmp
-                if(DEBUG && DEBUG_UPDATE_USER) cout << "Adding cell before tmp, after tmp_prev" << endl;
+                if(DEBUG && DEBUG_UPDATE_LLARR) cout << "Adding cell before tmp, after tmp_prev" << endl;
                 new_cell->next = tmp_prev->next;
                 tmp_prev->next = new_cell;
             }
         } else {
             // new_cell->item <= tmp->item
             // accounts for it tmp is the tail of the linked list
-            if(DEBUG && DEBUG_UPDATE_USER) cout << "Adding user after tmp" << endl;
+            if(DEBUG && DEBUG_UPDATE_LLARR) cout << "Adding user after tmp" << endl;
             new_cell->next = tmp->next;
             tmp->next = new_cell;
         }
     }
 
-    if(DEBUG && DEBUG_UPDATE_USER){
+    if(DEBUG && DEBUG_UPDATE_LLARR){
         PrintLLArr();
     }
 }
