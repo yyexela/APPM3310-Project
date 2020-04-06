@@ -82,6 +82,15 @@ void Train(){
         cout << " " << endl;
 
         factorize_vars.item_num = i+1;
+
+        // Serialize the data so it isn't lost every 1000 items
+        if( (i+1) % 1000 == 0 ){
+            {
+                    ofstream ofs("serialized");
+                    boost::archive::text_oarchive oa(ofs);
+                    oa << factorize_vars;
+            }
+        }
     }
 }
 
