@@ -80,6 +80,8 @@ void Train(){
         cout << "item " << i+1 << endl;
         PrintTimestamp();
         cout << " " << endl;
+
+        factorize_vars.item_num = i+1;
     }
 }
 

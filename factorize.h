@@ -25,12 +25,14 @@ class Factorize{
     void serialize(Archive & ar, const unsigned int version){
         ar & user_f;
         ar & item_f;
+        ar & item_num;
     }
     public:
     // user_f and item_f are user/item matrices with FEATURES
     // number of features for each user/item
     double user_f[USERS][FEATURES];
     double item_f[ITEMS][FEATURES];
+    int item_num;
 };
 
 #endif
