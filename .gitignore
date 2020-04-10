@@ -40,3 +40,7 @@
 # CSV files
 sparse_matrix_coords_and_values.csv
 userID_map.csv
+
+# Log files
+time.log
+*serialized
