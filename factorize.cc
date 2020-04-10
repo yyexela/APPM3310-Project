@@ -13,6 +13,10 @@ const double lrate = 0.001;
 const double K = 0.02;
 
 int main(int argc, char* argv[]){
+    ofstream wfs("time.log", ofstream::out | ofstream::trunc);
+    wfs << "Start time: " << clock() / (double) CLOCKS_PER_SEC << endl;
+    wfs.close();
+
     // Load in the files
     ProcessFiles();
     
@@ -20,19 +24,39 @@ int main(int argc, char* argv[]){
     cout << "Initializing user/item feature vectors" << endl;
     FeatureInit();
     PrintTimestamp();
-    cout << "" << endl;
+    cout << endl;
+
+    cout << "Initializing res_err array of vectors to riu" << endl;
+    ResErrInit();
+    if(ResErrSize() != VArrSize()){
+        cout << "ERROR: Mismatched VArrSize and ResArrSize" << endl;
+        exit(1);
+    }
+
+    PrintTimestamp();
+    cout << endl;
+
+    /*
+    cout << "Testing serialization w/ initialized values" << endl;
+    {
+        ofstream ofs("serialized");
+        boost::archive::text_oarchive oa(ofs);
+        oa << factorize_vars;
+    }
+    PrintTimestamp();
+    cout << endl;
+    */
 
     // Stochastic Gradient Descent
     cout << "Training the data" << endl;
     Train();
     cout << "Done training the data" << endl;
     PrintTimestamp();
-    cout << "" << endl;
-
+    cout << endl;
 
     cout << "Serializing the data to \"serialized\"" << endl;
     PrintTimestamp();
-    cout << "" << endl;
+    cout << endl;
 
     // Serialize the data so it isn't lost
     {
@@ -50,61 +74,63 @@ int main(int argc, char* argv[]){
  * on updating a feature before moving onto the next
  */
 void Train(){
-    double err, old_err, u_old;
-    int item, uid, rating;
-    int iters;
+    //We need to initialize total_err and old_err
+    //to two different values
+    double total_err;
+    double old_err;
 
-    for(int i = 0; i < ITEMS; ++i){
-        cell* tmp = parse_vars.items[i];
-        while(tmp != NULL){
-            item = tmp->item;
-            uid = tmp->uid;
-            rating = tmp->rating;
+    //Used to accurately do gradient descent since we update user_f and
+    //then do item_f, but we need to use the old user_f
+    double u_old;
 
-            err = 1;
-            old_err = -1;
-
-            while(err != old_err){
-                old_err = err;
-                err = rating - PredictRating(uid, item);
-                for(int ftr = 0; ftr < FEATURES; ++ftr){
-                    u_old = factorize_vars.user_f[uid-1][ftr];
-                    factorize_vars.user_f[uid-1][ftr] += lrate * (err * factorize_vars.item_f[item-1][ftr] - K * u_old);
-                    factorize_vars.item_f[item-1][ftr] += lrate * (err * u_old - K * factorize_vars.item_f[item-1][ftr]);
-
+    //Train one feature at a time
+    for(int n = 0; n < FEATURES; n++){
+        total_err = 1000000.0;
+        old_err = 1.0;
+        cout << "Feature " << n << endl;
+        //Loop until total_err is under ERR_THRESH (error threshold global var)
+        // while(!(-ERR_THRESH < old_err - total_err < ERR_THRESH))
+        while( !((old_err - total_err) < ERR_THRESH && (old_err - total_err) > (ERR_THRESH_LOW)) ){
+            old_err = total_err;
+            total_err = 0.0;
+            // 1-step gradient descent
+            // loop through all existing riu once
+            cout << "One Step Gradient Descent" << endl;
+            for(int i = 0; i < ITEMS; i++){
+                for(unsigned int j = 0; j < parse_vars.items_v[i].size(); j++){
+                    unsigned int item = parse_vars.items_v[i].at(j).item;
+                    unsigned int uid = parse_vars.items_v[i].at(j).uid;
+                    double err = factorize_vars.res_err[i].at(j) - 
+                        (factorize_vars.item_f[item-1][n] * factorize_vars.user_f[uid-1][n]);
+                    total_err += err;
+                    
+                    u_old = factorize_vars.user_f[uid-1][n];
+                    factorize_vars.user_f[uid-1][n] += lrate * (err * factorize_vars.item_f[item-1][n] - K * u_old);
+                    factorize_vars.item_f[item-1][n] += lrate * (err * u_old - K * factorize_vars.item_f[item-1][n]);
                 }
-                iters++;
             }
-            tmp = tmp->next;
+            cout << "Total Error: " << total_err << endl;
+            cout << "Difference: " << old_err - total_err << endl;
+            PrintTimestamp();
+            cout << endl;
         }
-        cout << "item " << i+1 << endl;
+        cout << "Trained feature " << n << endl;
+        UpdateResErr(n);
+
+        ofstream wfs("time.log", ofstream::out);
+        wfs << "Trained feature " << n << ". Elapsed time: " << (clock() - parse_vars.start) / (double) CLOCKS_PER_SEC << endl;
+        wfs.close();
+
         PrintTimestamp();
-        cout << " " << endl;
 
-        factorize_vars.item_num = i+1;
-
-        // Serialize the data so it isn't lost every 1000 items
-        if( (i+1) % 1000 == 0 ){
-            {
-                    ofstream ofs("serialized");
-                    boost::archive::text_oarchive oa(ofs);
-                    oa << factorize_vars;
-            }
+        cout << "Saving item_f, user_f, and res_err" << endl;
+        {
+            ofstream ofs("serialized");
+            boost::archive::text_oarchive oa(ofs);
+            oa << factorize_vars;
         }
+        PrintTimestamp();
     }
-}
-
-/*
- * Takes the euclidean dot product of a pair
- * of given user-feature and item-feature
- * vectors
- */
-double PredictRating(int uid, int item){
-    double sum1 = 0;
-    for(int i = 0; i < FEATURES; i++){
-        sum1 = sum1 + (factorize_vars.item_f[item-1][i] * factorize_vars.user_f[uid-1][i]);
-    }
-    return (sum1);
 }
 
 /*
@@ -126,4 +152,42 @@ void FeatureInit(){
             factorize_vars.item_f[i][j] = FEATURE_INIT;
         }
     }
+}
+
+/*
+ * Update the res_err vector with the n-th
+ * feature is put into each user/item-pair's residual error
+ */
+void UpdateResErr(short n){
+    for(int i = 0; i < ITEMS; i++){
+        for(unsigned int j = 0; j < factorize_vars.res_err[i].size(); j++){
+            factorize_vars.res_err[i].at(j) -= 
+                (factorize_vars.item_f[i][n] * factorize_vars.user_f[parse_vars.items_v[i].at(j).uid][n]);
+        }
+    }
+}
+
+/*
+ * Sets res_err to riu for each item/user
+ * Same functionality as UpdateResErr, but instead of
+ * updating it initializes the array of vectors
+ */
+void ResErrInit(){
+    for(int i = 0; i < ITEMS; i++){
+        for(unsigned int j = 0; j < parse_vars.items_v[i].size(); j++){
+            factorize_vars.res_err[i].push_back(parse_vars.items_v[i].at(j).rating);
+        }
+    }
+}
+
+/*
+ * Used to check to make sure the size
+ * of res_err is correct
+ */ 
+unsigned int ResErrSize(){
+    unsigned int size = 0;
+    for(int i = 0; i < ITEMS; i++){
+        size += factorize_vars.res_err[i].size();
+    }
+    return size;
 }

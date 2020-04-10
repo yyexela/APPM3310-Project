@@ -26,7 +26,6 @@ parse-csv.o : parse-csv.cc parse-csv.h globals.h
 
 factorize.o : factorize.cc factorize.h globals.h
 	$(CC) $(CFLAGS) -I ~/boost/boost_1_72_0 -c factorize.cc
-#	$(CC) $(CFLAGS) -c factorize.cc
 
 .PHONY : clean
 

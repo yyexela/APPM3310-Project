@@ -6,6 +6,7 @@
 #include <string>
 #include <unordered_map>
 #include <ctime>
+#include <vector>
 
 using namespace std;
 
@@ -17,24 +18,25 @@ struct cell{
     cell *next;
 };
 
+// Booleans used to print debug info
+const bool DEBUG = false;
+const bool DEBUG_UID = false;
+const bool DEBUG_SPLINE = false;
+const bool DEBUG_UPDATE_VARR = false;
+const bool DISABLE_CHECKS = false;
+
 // Forward declarations
 void SparseLine(string line);
 void UIDMapLine(string line);
-void UpdateLLArr(int uid, int item, int rating);
-void PrintLLArr();
+void UpdateVArr(int uid, int item, int rating);
+void PrintVArr();
 void PrintCell(cell* cl);
-unsigned int LLArrSize();
+unsigned int VArrSize();
 void PrintTimestamp();
 int GetRating(int uid, int item);
 void ProcessFiles();
 bool TestSample();
 
-// Booleans used to print debug info
-const bool DEBUG = false;
-const bool DEBUG_UID = false;
-const bool DEBUG_SPLINE = false;
-const bool DEBUG_UPDATE_LLARR = false;
-const bool DISABLE_CHECKS = false;
 
 // Files to read from
 const string SPARSE_FILE = "InputCSV/sparse_matrix_coords_and_values.csv";
@@ -51,9 +53,8 @@ class Parse{
     clock_t start = std::clock();
     clock_t prev_time = start;
 
-    // User array of linked-lists
-    cell* items[ITEMS];
-
+    // Item array of vectors for better caching
+    vector <cell> items_v[ITEMS]; 
 };
 
 #endif

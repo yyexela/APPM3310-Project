@@ -7,54 +7,6 @@ using namespace std;
 extern Parse parse_vars;
 
 /*
- * Checks 10 random sample values to see if they exist in
- * the created linked-list array
- */
-bool TestSample(){
-    if(GetRating(407948, 2001) != 3){
-        cout << "TestSample failed: uid " << 407948 << " item " << 2001 << endl;
-        return false;
-    }
-    if(GetRating(188863, 10852) != 5){
-        cout << "TestSample failed: uid " << 188863 << " item " << 10852 << endl;
-        return false;
-    }
-    if(GetRating(65600, 14968) != 5){
-        cout << "TestSample failed: uid " << 65600 << " item " << 14968 << endl;
-        return false;
-    }
-    if(GetRating(306405, 8782) != 2){
-        cout << "TestSample failed: uid " << 306405 << " item " << 8782 << endl;
-        return false;
-    }
-    if(GetRating(193667, 16784) != 5){
-        cout << "TestSample failed: uid " << 193667 << " item " << 16784 << endl;
-        return false;
-    }
-    if(GetRating(353047, 1976) != 2){
-        cout << "TestSample failed: uid " << 353047 << " item " << 1976 << endl;
-        return false;
-    }
-    if(GetRating(451987, 11446) != 3){
-        cout << "TestSample failed: uid " << 451987 << " item " << 11446 << endl;
-        return false;
-    }
-    if(GetRating(189727, 1180) != 4){
-        cout << "TestSample failed: uid " << 189727 << " item " << 1180 << endl;
-        return false;
-    }
-    if(GetRating(156529, 2751) != 5){
-        cout << "TestSample failed: uid " << 156529 << " item " << 2751 << endl;
-        return false;
-    }
-    if(GetRating(92710, 16730) != 3){
-        cout << "TestSample failed: uid " << 92710 << " item " << 16730 << endl;
-        return false;
-    }
-    return true;
-}
-
-/*
  * Processes the two CSV files SPARSE_FILE
  * and UIDMAP_FILE and places it into
  * the user[] array of linked-lists
@@ -62,7 +14,7 @@ bool TestSample(){
 void ProcessFiles(){
     string msg = "Running parse-csv.cc";
     cout << msg << endl;
-    cout << "" << endl;
+    cout << endl;
 
     // ifs is used to read files
     ifstream ifs;
@@ -90,7 +42,7 @@ void ProcessFiles(){
 
     cout << "Processed uid maps, inserted " << parse_vars.old2newuid_map.size() << " elements" << endl;
     PrintTimestamp();
-    cout << "" << endl;
+    cout << endl;
     cout << "Processing sparse_matrix file" << endl;
 
     // Counts the number of lines processed
@@ -123,9 +75,9 @@ void ProcessFiles(){
         cout << "" << endl;
         cout << "Running tests to ensure file transfer was correct" << endl;
 
-        unsigned int arr_size = LLArrSize();
+        unsigned int arr_size = VArrSize();
         if(arr_size != lines){
-            cout << "Error: mismatched lines between final items[] array and SPARSE_FILE" << endl;
+            cout << "Error: mismatched lines between final items_v[] array and SPARSE_FILE" << endl;
             cout << "    arr_size: " << arr_size << ", lines: " << lines << endl;
         }
 
@@ -137,7 +89,7 @@ void ProcessFiles(){
 
     cout << "File read process complete" << endl;
     PrintTimestamp();
-    cout << "" << endl;
+    cout << endl;
 }
 
 /*
@@ -160,11 +112,11 @@ int GetRating(int uid, int item){
     // Check if it exists in the array
     if(item > ITEMS || item < 1) return -1;
     
-    // Loop through the array of linked-lists
-    cell* tmp = parse_vars.items[item-1];
-    while(tmp != NULL && item <= tmp->uid){
-        if(tmp->uid == uid) return tmp->rating;
-        tmp = tmp->next;
+    // Loop through the array of vectors
+    for(unsigned int i = 0; i < parse_vars.items_v[item-1].size(); i++){
+        if(parse_vars.items_v[item-1].at(i).uid == uid){
+            return parse_vars.items_v[item-1].at(i).rating;
+        }
     }
     // Reached end of item's list
     return -1;
@@ -172,16 +124,12 @@ int GetRating(int uid, int item){
 
 /* 
  * Outputs the number of individual cells in the
- * Linked-List array
+ * array of vectors
  */
-unsigned int LLArrSize(){
+unsigned int VArrSize(){
     unsigned int size = 0;
     for(int i = 0; i < ITEMS; ++i){
-        cell* tmp = parse_vars.items[i];
-        while(tmp != NULL){
-            ++size;
-            tmp = tmp->next;
-        }
+        size += parse_vars.items_v[i].size();
     }
     return size;
 }
@@ -190,89 +138,44 @@ unsigned int LLArrSize(){
  * Prints each cell in the array with padding
  * Linked-List array
  */
-void PrintLLArr(){
-    for(int i = 0; i < ITEMS; ++i){
-        cell* tmp = parse_vars.items[i];
-        cout << endl;
-        while(tmp != NULL){
-            PrintCell(tmp);
-            tmp = tmp->next;
+void PrintVArr(){
+    for(int i = 0; i < ITEMS; i++){
+        for(unsigned int j = 0; j < parse_vars.items_v[i].size(); j++){
+            PrintCell(&parse_vars.items_v[i].at(j));
         }
-        cout << endl;
     }
+    cout << endl;
 }
 
 /*
  * Prints a given cell's values
+ * Requires a cell pointer
  */
 void PrintCell(cell* cl){
-    cout << "item" << cl->item << ", user " << cl->uid << ", rating " << cl->rating << endl;
+    cout << "item " << cl->item << ", user " << cl->uid << ", rating " << cl->rating << endl;
 }
 
 /*
  * Adds a cell to the items[] array and
  * corresponding linked-list
  */
-void UpdateLLArr(int uid, int item, int rating){
+void UpdateVArr(int uid, int item, int rating){
     //create the corresponding cell
-    cell* new_cell = new cell();
-    new_cell->uid = uid;
-    new_cell->item = item;
-    new_cell->rating = rating;
-    new_cell->next = NULL;
+    cell new_cell;
+    new_cell.uid = uid;
+    new_cell.item = item;
+    new_cell.rating = rating;
 
-    if(DEBUG && DEBUG_UPDATE_LLARR) cout << "Adding cell | uid:" << uid << ", item " << item << ", rating " << rating << endl;
-    if(DEBUG && DEBUG_UPDATE_LLARR){
-        PrintLLArr();
+    if(DEBUG && DEBUG_UPDATE_VARR){
+        cout << "Adding: item " << item << " uid " << uid << " rating " << rating << endl; 
+        PrintVArr();
     }
 
-    //check if root is null
-    if(parse_vars.items[item-1] == NULL){
-        //add user as head
-        if(DEBUG && DEBUG_UPDATE_LLARR) cout << "Adding cell as head (null LL)" << endl;
-        parse_vars.items[item-1] = new_cell;
-    } else {
-        //there exists a linkedlist, traverse until item is between 2 or last
-        cell* tmp = parse_vars.items[item-1];
-        cell* tmp_prev = NULL;
-
-        if(DEBUG && DEBUG_UPDATE_LLARR){
-            cout << "Initial tmp: ";
-            PrintCell(tmp);
-        }
-
-        //iterate until tmp is tail OR tmp->item >= new_cell->item
-        while(  tmp->next != NULL && 
-                new_cell->uid < tmp->uid){
-            tmp_prev = tmp;
-            tmp = tmp->next;
-            if(DEBUG && DEBUG_UPDATE_LLARR) cout << "Iterated tmp" << endl;
-        }
-
-        if(new_cell->uid > tmp->uid){
-            //check if root was tmp
-            if(tmp_prev == NULL){
-                if(DEBUG && DEBUG_UPDATE_LLARR) cout << "Adding cell as head (before tmp)" << endl;
-                //set new_cell as head
-                parse_vars.items[item-1] = new_cell;
-                new_cell->next = tmp;
-            } else {
-                //set new_cell after tmp
-                if(DEBUG && DEBUG_UPDATE_LLARR) cout << "Adding cell before tmp, after tmp_prev" << endl;
-                new_cell->next = tmp_prev->next;
-                tmp_prev->next = new_cell;
-            }
-        } else {
-            // new_cell->item <= tmp->item
-            // accounts for it tmp is the tail of the linked list
-            if(DEBUG && DEBUG_UPDATE_LLARR) cout << "Adding user after tmp" << endl;
-            new_cell->next = tmp->next;
-            tmp->next = new_cell;
-        }
-    }
-
-    if(DEBUG && DEBUG_UPDATE_LLARR){
-        PrintLLArr();
+    //add cell lto the end of the vector at index [item]
+    parse_vars.items_v[item-1].push_back(new_cell);
+    
+    if(DEBUG && DEBUG_UPDATE_VARR){
+        PrintVArr();
     }
 }
 
@@ -353,5 +256,53 @@ void SparseLine(string line){
     if(!(uid > 0 && item > 0 && rating > 0)) cout << "Error on line, invalid uid/item/rating combo " << line << endl;
 
     // Update array
-    UpdateLLArr(uid, item, rating);
+    UpdateVArr(uid, item, rating);
+}
+
+/*
+ * Checks 10 random sample values to see if they exist in
+ * the created linked-list array
+ */
+bool TestSample(){
+    if(GetRating(407948, 2001) != 3){
+        cout << "TestSample failed: uid " << 407948 << " item " << 2001 << endl;
+        return false;
+    }
+    if(GetRating(188863, 10852) != 5){
+        cout << "TestSample failed: uid " << 188863 << " item " << 10852 << endl;
+        return false;
+    }
+    if(GetRating(65600, 14968) != 5){
+        cout << "TestSample failed: uid " << 65600 << " item " << 14968 << endl;
+        return false;
+    }
+    if(GetRating(306405, 8782) != 2){
+        cout << "TestSample failed: uid " << 306405 << " item " << 8782 << endl;
+        return false;
+    }
+    if(GetRating(193667, 16784) != 5){
+        cout << "TestSample failed: uid " << 193667 << " item " << 16784 << endl;
+        return false;
+    }
+    if(GetRating(353047, 1976) != 2){
+        cout << "TestSample failed: uid " << 353047 << " item " << 1976 << endl;
+        return false;
+    }
+    if(GetRating(451987, 11446) != 3){
+        cout << "TestSample failed: uid " << 451987 << " item " << 11446 << endl;
+        return false;
+    }
+    if(GetRating(189727, 1180) != 4){
+        cout << "TestSample failed: uid " << 189727 << " item " << 1180 << endl;
+        return false;
+    }
+    if(GetRating(156529, 2751) != 5){
+        cout << "TestSample failed: uid " << 156529 << " item " << 2751 << endl;
+        return false;
+    }
+    if(GetRating(92710, 16730) != 3){
+        cout << "TestSample failed: uid " << 92710 << " item " << 16730 << endl;
+        return false;
+    }
+    return true;
 }

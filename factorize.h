@@ -8,6 +8,7 @@
 
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/array.hpp>
+#include <boost/serialization/vector.hpp>
 
 using namespace std;
 
@@ -15,6 +16,9 @@ using namespace std;
 void FeatureInit();
 double PredictRating(int uid, int item);
 void Train();
+void UpdateResErr(short n);
+void ResErrInit();
+unsigned int ResErrSize();
 
 // Factorize class used to hold the smaller 2 matrices,
 // contains serialization functionality
@@ -25,14 +29,17 @@ class Factorize{
     void serialize(Archive & ar, const unsigned int version){
         ar & user_f;
         ar & item_f;
-        ar & item_num;
     }
     public:
     // user_f and item_f are user/item matrices with FEATURES
     // number of features for each user/item
+    // Ordered FEATURES then USERS/ITEMS for better locality
     double user_f[USERS][FEATURES];
     double item_f[ITEMS][FEATURES];
-    int item_num;
+
+    // array of vectors containing residual error
+    // SHOULD BE SAME SIZE OF items_v DURING RUNTIME
+    vector <double> res_err[ITEMS];
 };
 
 #endif
