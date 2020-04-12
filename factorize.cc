@@ -2,6 +2,8 @@
 #include <fstream>
 #include "parse-csv.h"
 #include "factorize.h"
+#include "float.h"
+#include <cmath>
 
 using namespace std;
 
@@ -48,7 +50,7 @@ int main(int argc, char* argv[]){
     */
 
     // Stochastic Gradient Descent
-    cout << "Training the data" << endl;
+    cout << "Training the data" << endl << endl;
     Train();
     cout << "Done training the data" << endl;
     PrintTimestamp();
@@ -85,12 +87,13 @@ void Train(){
 
     //Train one feature at a time
     for(int n = 0; n < FEATURES; n++){
-        total_err = 1000000.0;
-        old_err = 1.0;
+        total_err = DBL_MAX/1.125;
+        old_err = DBL_MAX;
         cout << "Feature " << n << endl;
-        //Loop until total_err is under ERR_THRESH (error threshold global var)
+        // Loop until total_err is under ERR_THRESH (error threshold global var)
         // while(!(-ERR_THRESH < old_err - total_err < ERR_THRESH))
-        while( !((old_err - total_err) < ERR_THRESH && (old_err - total_err) > (ERR_THRESH_LOW)) ){
+        // and while old_err > total_err
+        do{
             old_err = total_err;
             total_err = 0.0;
             // 1-step gradient descent
@@ -102,7 +105,7 @@ void Train(){
                     unsigned int uid = parse_vars.items_v[i].at(j).uid;
                     double err = factorize_vars.res_err[i].at(j) - 
                         (factorize_vars.item_f[item-1][n] * factorize_vars.user_f[uid-1][n]);
-                    total_err += err;
+                    total_err += (pow(err,2) + K * (factorize_vars.mag_item[item-1] + factorize_vars.mag_user[uid-1]));
                     
                     u_old = factorize_vars.user_f[uid-1][n];
                     factorize_vars.user_f[uid-1][n] += lrate * (err * factorize_vars.item_f[item-1][n] - K * u_old);
@@ -110,26 +113,48 @@ void Train(){
                 }
             }
             cout << "Total Error: " << total_err << endl;
+            cout << "Old Error: " << old_err << endl;
             cout << "Difference: " << old_err - total_err << endl;
             PrintTimestamp();
             cout << endl;
-        }
+        }while( !((old_err - total_err) < ERR_THRESH && (old_err - total_err) > (ERR_THRESH_LOW)) 
+            && old_err > total_err);
         cout << "Trained feature " << n << endl;
         UpdateResErr(n);
+        UpdateMags(n);
 
-        ofstream wfs("time.log", ofstream::out);
-        wfs << "Trained feature " << n << ". Elapsed time: " << (clock() - parse_vars.start) / (double) CLOCKS_PER_SEC << endl;
+        ofstream wfs("time.log", ofstream::out | ofstream::app);
+        wfs << "Trained feature " << (n+1) << ". Elapsed time: " << (clock() - parse_vars.start) / (double) CLOCKS_PER_SEC << endl;
+        wfs << "Total error: " << total_err << endl;
+        wfs << endl;
         wfs.close();
 
         PrintTimestamp();
+        cout << endl;
 
-        cout << "Saving item_f, user_f, and res_err" << endl;
+        cout << "Saving item_f and user_f" << endl;
         {
             ofstream ofs("serialized");
             boost::archive::text_oarchive oa(ofs);
             oa << factorize_vars;
         }
         PrintTimestamp();
+        cout << endl;
+    }
+}
+
+/*
+ * Updates the magnitude squared of each
+ * user/item vector for feature n
+ */
+void UpdateMags(double arr[40], int n){
+    for(int i = 0; i < n; i++){
+        for(int j = 0; j < ITEMS; j++){
+            factorize_vars.mag_item[j] += pow(factorize_vars.item_f[j][n],2);
+        }
+        for(int j = 0; j < USERS; j++){
+            factorize_vars.mag_user[j] += pow(factorize_vars.user_f[j][n],2);
+        }
     }
 }
 
@@ -161,8 +186,12 @@ void FeatureInit(){
 void UpdateResErr(short n){
     for(int i = 0; i < ITEMS; i++){
         for(unsigned int j = 0; j < factorize_vars.res_err[i].size(); j++){
-            factorize_vars.res_err[i].at(j) -= 
-                (factorize_vars.item_f[i][n] * factorize_vars.user_f[parse_vars.items_v[i].at(j).uid][n]);
+            unsigned int item = parse_vars.items_v[i].at(j).item;
+            unsigned int uid = parse_vars.items_v[i].at(j).uid;
+            double residual = (factorize_vars.item_f[item-1][n] * factorize_vars.user_f[uid-1][n]);
+            double old_rating = factorize_vars.res_err[i].at(j);
+            double new_rating = old_rating - residual;
+            factorize_vars.res_err[i].at(j) = new_rating;
         }
     }
 }

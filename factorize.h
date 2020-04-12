@@ -19,6 +19,7 @@ void Train();
 void UpdateResErr(short n);
 void ResErrInit();
 unsigned int ResErrSize();
+void UpdateMags(int n);
 
 // Factorize class used to hold the smaller 2 matrices,
 // contains serialization functionality
@@ -40,6 +41,12 @@ class Factorize{
     // array of vectors containing residual error
     // SHOULD BE SAME SIZE OF items_v DURING RUNTIME
     vector <double> res_err[ITEMS];
+
+    // array of doubles containing magnitude of
+    // elements 0 to n-1, where n is the currently
+    // trained feature, starts as all 0's
+    double mag_item[ITEMS] = {0};
+    double mag_user[USERS] = {0};
 };
 
 #endif
