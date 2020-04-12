@@ -105,7 +105,8 @@ void Train(){
                     unsigned int uid = parse_vars.items_v[i].at(j).uid;
                     double err = factorize_vars.res_err[i].at(j) - 
                         (factorize_vars.item_f[item-1][n] * factorize_vars.user_f[uid-1][n]);
-                    total_err += (pow(err,2) + K * (factorize_vars.mag_item[item-1] + factorize_vars.mag_user[uid-1]));
+                    total_err += (pow(err,2) + K *  ((factorize_vars.mag_item[item-1] + pow(factorize_vars.item_f[item-1][n],2)) + 
+                                                    factorize_vars.mag_user[uid-1] + pow(factorize_vars.user_f[uid-1][n],2)));
                     
                     u_old = factorize_vars.user_f[uid-1][n];
                     factorize_vars.user_f[uid-1][n] += lrate * (err * factorize_vars.item_f[item-1][n] - K * u_old);

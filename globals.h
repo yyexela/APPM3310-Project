@@ -13,7 +13,7 @@
 #define ITEMS 17770
 #define USERS 480189
 
-#define ERR_THRESH 1.0 
-#define ERR_THRESH_LOW -1.0
+#define ERR_THRESH 0.109375
+#define ERR_THRESH_LOW -0.109375
 
 #endif
