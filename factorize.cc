@@ -147,7 +147,7 @@ void Train(){
  * Updates the magnitude squared of each
  * user/item vector for feature n
  */
-void UpdateMags(double arr[40], int n){
+void UpdateMags(int n){
     for(int i = 0; i < n; i++){
         for(int j = 0; j < ITEMS; j++){
             factorize_vars.mag_item[j] += pow(factorize_vars.item_f[j][n],2);
