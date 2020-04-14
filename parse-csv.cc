@@ -73,6 +73,7 @@ void ProcessFiles(){
     // Print statistics
     cout << "Processed sparse_matrix file, " << lines << " lines" << endl;
     PrintTimestamp();
+    cout << endl;
 
     if(!DISABLE_CHECKS){
         cout << "" << endl;
@@ -100,9 +101,66 @@ void ProcessFiles(){
         }
     }
 
+    cout << "Creating avg matrices" << endl;
+    MakeAvgItem();
+    MakeAvgUser();
+    cout << endl;
+
     cout << "File read process complete" << endl;
     PrintTimestamp();
     cout << endl;
+}
+
+/*
+ * Averages together the offset for each user
+ */
+void MakeAvgUser(){
+    double avg;
+    double global_avg = 0;
+    unsigned int count = 0;
+    unsigned int global_count = 0;
+
+    for(int u = 0; u < USERS; u++){
+        avg = 0;
+        count = 0;
+        // we have to loop through the entire vector array for each user :(
+        for(int i = 0; i < ITEMS; i++){
+            for(unsigned int j = 0; j < parse_vars.items_v[i].size(); j++){
+                if(parse_vars.items_v[i].at(j).uid-1 == u){
+                    avg += parse_vars.items_v[i].at(j).rating - parse_vars.item_avg[i];
+                    count++;
+                    global_count++;
+                }
+            }
+        }
+        global_avg += avg;
+        avg = avg / (0.0 + count);
+        parse_vars.user_avg[u] = avg;
+    }
+
+    parse_vars.global_offset = global_avg/(0.0 + global_count);
+}
+
+/*
+ * Averages together the ratings for each item
+ */
+void MakeAvgItem(){
+    double avg;
+    double global_avg = 0;
+    unsigned int global_count = 0;
+
+    for(int i = 0; i < ITEMS; i++){
+        avg = 0;
+        for(unsigned int j = 0; j < parse_vars.items_v[i].size(); j++){
+            avg += parse_vars.items_v[i].at(j).rating;
+        }
+        global_avg += avg;
+        avg = avg / parse_vars.items_v[i].size();
+        global_count += parse_vars.items_v[i].size();
+        parse_vars.item_avg[i] = avg;
+    }
+
+    parse_vars.global_avg = global_avg / (0.0 + global_count);
 }
 
 /*

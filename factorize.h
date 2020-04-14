@@ -15,6 +15,7 @@ using namespace std;
 // Forward declarations
 void FeatureInit();
 double PredictRating(int uid, int item);
+double PredictRatingBaseline(int uid, int item);
 void Train();
 void UpdateResErr(short n);
 void ResErrInit();

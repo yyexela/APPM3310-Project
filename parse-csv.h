@@ -37,6 +37,8 @@ void PrintTimestamp();
 int GetRating(int uid, int item);
 void ProcessFiles();
 bool TestSample();
+void MakeAvgItem();
+void MakeAvgUser();
 
 
 // Files to read from
@@ -56,7 +58,16 @@ class Parse{
 
     // Item array of vectors:
     // There are ITEMS items with a vector of ratings by users for each item
-    vector <cell> items_v[ITEMS]; 
+    vector <cell> items_v[ITEMS];
+
+    // Contains the average initial rating for each movie
+    double item_avg[ITEMS];
+
+    // Contains the average initial offset for ratings by each user
+    double user_avg[USERS];
+
+    // Global average and global offset
+    double global_avg, global_offset;
 };
 
 #endif
