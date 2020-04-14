@@ -16,6 +16,10 @@ const double K = 0.02;
 
 int main(int argc, char* argv[]){
     ofstream wfs("time.log", ofstream::out | ofstream::trunc);
+    wfs << "Features: " << FEATURES << endl;
+    wfs << "Threshold: " << ERR_THRESH << endl;
+    wfs << "Vector init: " << FEATURE_INIT << endl;
+    wfs << endl;
     wfs << "Start time: " << clock() / (double) CLOCKS_PER_SEC << endl;
     wfs.close();
 
@@ -55,6 +59,18 @@ int main(int argc, char* argv[]){
             boost::archive::text_oarchive oa(ofs);
             oa << factorize_vars;
     }
+    
+    if(PREDICT_FINAL){
+        for(int i = 0; i < ITEMS; i++){
+            for(int j = 0; j < USERS; j++){
+                double prediction = 0;
+                for(int n = 0; n < FEATURES; n++){
+                    prediction += factorize_vars.item_f[i][n] * factorize_vars.user_f[j][n];
+                }
+                cout << "prediction for item " << i+1 << " user " << j+1 << " is " << prediction << endl;
+            }
+        }
+    }
 
     cout << "Program finished, exiting" << endl;
     PrintTimestamp();
@@ -71,25 +87,19 @@ void Train(){
     double total_reg_err;
     double old_reg_err;
 
-    //Used to accurately do gradient descent since we update user_f and
-    //then do item_f, but we need to use the old user_f
-    //double u_old;
-
     //Train one feature at a time
     for(int n = 0; n < FEATURES; n++){
         total_reg_err = DBL_MAX/1.125;
         old_reg_err = DBL_MAX;
         total_err = 0;
         cout << "Feature " << n << endl;
-        // Loop until total_reg_err is under ERR_THRESH (error threshold global var)
-        // while(!(-ERR_THRESH < old_reg_err - total_reg_err < ERR_THRESH))
-        // and while old_reg_err > total_reg_err
-        do{
+
+        // Loop until total_reg_err is within +/- ERR_THRESH of 0
+        while( !((old_reg_err - total_reg_err) < ERR_THRESH && (old_reg_err - total_reg_err) > (ERR_THRESH_LOW)) ){
             old_reg_err = total_reg_err;
             total_reg_err = 0.0;
             // 1-step gradient descent
             // loop through all existing riu once
-            //cout << "One Step Gradient Descent" << endl;
             for(int i = 0; i < ITEMS; i++){
                 for(unsigned int j = 0; j < parse_vars.items_v[i].size(); j++){
                     unsigned int item = parse_vars.items_v[i].at(j).item;
@@ -101,40 +111,51 @@ void Train(){
                     double user_feat = factorize_vars.user_f[uid-1][n];
                     double product_feat = item_feat * user_feat;
 
-                    // clipping
-                    // currently seems to severely slow down run time
-                    //product_feat = product_feat > 5 ? 5 : product_feat;
-                    //product_feat = product_feat < 0 ? 0 : product_feat;
+                    // clipping: seems to increase run time by a SIGNIFICANT amount
+                    /*
+                    product_feat = product_feat > 5 ? 5 : product_feat;
+                    product_feat = product_feat < 0 ? 0 : product_feat;
+                    */
 
                     double err = curr_res_err - (product_feat);
 
                     double item_mag = factorize_vars.mag_item[item-1]; // *_mag is the value of the magnitude of features 1-(n-1) 
                     double user_mag = factorize_vars.mag_user[uid-1];
 
-                    total_err = pow(err,2);
-                    total_reg_err += (total_err + K * ((item_mag + pow(item_feat,2)) + user_mag + pow(user_feat,2))); // regularized square error
+                    total_reg_err += (pow(err,2) + K * ((item_mag + pow(item_feat,2)) + user_mag + pow(user_feat,2))); // regularized square error
                     
                     factorize_vars.user_f[uid-1][n] += lrate * (err * item_feat - K * user_feat);
                     factorize_vars.item_f[item-1][n] += lrate * (err * user_feat - K * item_feat);
                 }
             }
-            
+            /*
             cout << "Regularized Total Error: " << total_reg_err << endl;
             cout << "Regularized Old Error: " << old_reg_err << endl;
             cout << "Difference: " << old_reg_err - total_reg_err << endl;
             PrintTimestamp();
             cout << endl;
-            
-        }while( !((old_reg_err - total_reg_err) < ERR_THRESH && (old_reg_err - total_reg_err) > (ERR_THRESH_LOW)) 
-            /*&& old_reg_err > total_reg_err*/);
-
-        cout << "Trained feature " << n+1 << endl;
+            */
+        }
+        
         UpdateResErr(n);
         UpdateMags(n);
+
+        // Update total error
+        total_err = 0;
+        for(int i = 0; i < ITEMS; i++){
+            for(unsigned int j = 0; j < parse_vars.items_v[i].size(); j++){
+                double curr_res_err = factorize_vars.res_err[i].at(j); // The updated cached residual error
+
+                total_err += pow(curr_res_err,2); 
+            }
+        }
+
+        cout << "Trained feature " << n+1 << endl;
 
         ofstream wfs("time.log", ofstream::out | ofstream::app);
         wfs << "Trained feature " << (n+1) << ". Elapsed time: " << (clock() - parse_vars.start) / (double) CLOCKS_PER_SEC << endl;
         wfs << "Total error: " << total_err << endl;
+        wfs << "Total regularized error: " << total_reg_err << endl;
         wfs << endl;
         wfs.close();
 
@@ -142,11 +163,15 @@ void Train(){
         cout << endl;
 
         cout << "Saving item_f and user_f" << endl;
+
         {
-            ofstream ofs("serialized");
+            string file = "SerializedFeatures/serialized";
+            file.append(to_string(n));
+            ofstream ofs(file);
             boost::archive::text_oarchive oa(ofs);
             oa << factorize_vars;
         }
+
         PrintTimestamp();
         cout << endl;
     }
