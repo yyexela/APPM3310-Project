@@ -101,6 +101,11 @@ void Train(){
                     double user_feat = factorize_vars.user_f[uid-1][n];
                     double product_feat = item_feat * user_feat;
 
+                    // clipping
+                    // currently seems to severely slow down run time
+                    //product_feat = product_feat > 5 ? 5 : product_feat;
+                    //product_feat = product_feat < 0 ? 0 : product_feat;
+
                     double err = curr_res_err - (product_feat);
 
                     double item_mag = factorize_vars.mag_item[item-1]; // *_mag is the value of the magnitude of features 1-(n-1) 
@@ -113,11 +118,13 @@ void Train(){
                     factorize_vars.item_f[item-1][n] += lrate * (err * user_feat - K * item_feat);
                 }
             }
-            //cout << "Regularized Total Error: " << total_reg_err << endl;
-            //cout << "Regularized Old Error: " << old_reg_err << endl;
-            //cout << "Difference: " << old_reg_err - total_reg_err << endl;
-            //PrintTimestamp();
-            //cout << endl;
+            
+            cout << "Regularized Total Error: " << total_reg_err << endl;
+            cout << "Regularized Old Error: " << old_reg_err << endl;
+            cout << "Difference: " << old_reg_err - total_reg_err << endl;
+            PrintTimestamp();
+            cout << endl;
+            
         }while( !((old_reg_err - total_reg_err) < ERR_THRESH && (old_reg_err - total_reg_err) > (ERR_THRESH_LOW)) 
             /*&& old_reg_err > total_reg_err*/);
 

@@ -101,10 +101,12 @@ void ProcessFiles(){
         }
     }
 
-    cout << "Creating avg matrices" << endl;
-    MakeAvgItem();
-    MakeAvgUser();
-    cout << endl;
+    if(!DISABLE_AVGS){
+        cout << "Creating avg matrices" << endl;
+        MakeAvgItem();
+        MakeAvgUser();
+        cout << endl;
+    }
 
     cout << "File read process complete" << endl;
     PrintTimestamp();
@@ -123,6 +125,7 @@ void MakeAvgUser(){
     for(int u = 0; u < USERS; u++){
         avg = 0;
         count = 0;
+
         // we have to loop through the entire vector array for each user :(
         for(int i = 0; i < ITEMS; i++){
             for(unsigned int j = 0; j < parse_vars.items_v[i].size(); j++){
@@ -137,6 +140,8 @@ void MakeAvgUser(){
         avg = avg / (0.0 + count);
         parse_vars.user_avg[u] = avg;
     }
+
+    cout << "done processing MakeAvgUser" << endl;
 
     parse_vars.global_offset = global_avg/(0.0 + global_count);
 }

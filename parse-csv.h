@@ -22,9 +22,10 @@ const bool DEBUG = false;
 const bool DEBUG_UID = false;
 const bool DEBUG_SPLINE = false;
 const bool DEBUG_UPDATE_VARR = false;
-const bool DISABLE_CHECKS = true;
+const bool DISABLE_CHECKS = false;
 const bool PROCESS_UID = false;
-const bool PRINT_VECARR = true;
+const bool PRINT_VECARR = false;
+const bool DISABLE_AVGS = true;
 
 // Forward declarations
 void SparseLine(string line);
@@ -42,8 +43,8 @@ void MakeAvgUser();
 
 
 // Files to read from
-const string SPARSE_FILE = "InputCSV/testsparse_matrix_coords_and_values.csv";
-const string UIDMAP_FILE = "InputCSV/testuserID_map.csv";
+const string SPARSE_FILE = "InputCSV/sparse_matrix_coords_and_values.csv";
+const string UIDMAP_FILE = "InputCSV/userID_map.csv";
 
 class Parse{
     public:

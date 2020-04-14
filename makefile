@@ -4,10 +4,10 @@ CC = g++
 # compiler flags:
 # -g		adds debug info
 # -Wall		Turns on optional warnings
-# CFLAGS = -Ofast -g -Wall -march=native -mtune=native -funroll-loops -funswitch-loops \
+ CFLAGS = -Ofast -g -Wall -march=native -mtune=native -funroll-loops -funswitch-loops \
  -Wunsafe-loop-optimizations -ftree-vectorizer-verbose=7 -fopt-info-vec-optimized -floop-interchange \
  -ftree-vectorize
- CFLAGS = -Og -g -Wall
+# CFLAGS = -Og -g -Wall
 
 # the output binary file
 # TARGET = parse-csv.cc
