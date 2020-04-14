@@ -15,7 +15,6 @@ struct cell{
     short rating;
     int uid;
     int item;
-    cell *next;
 };
 
 // Booleans used to print debug info
@@ -23,8 +22,9 @@ const bool DEBUG = false;
 const bool DEBUG_UID = false;
 const bool DEBUG_SPLINE = false;
 const bool DEBUG_UPDATE_VARR = false;
-const bool DISABLE_CHECKS = false;
+const bool DISABLE_CHECKS = true;
 const bool PROCESS_UID = false;
+const bool PRINT_VECARR = true;
 
 // Forward declarations
 void SparseLine(string line);

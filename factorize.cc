@@ -38,17 +38,6 @@ int main(int argc, char* argv[]){
     PrintTimestamp();
     cout << endl;
 
-    /*
-    cout << "Testing serialization w/ initialized values" << endl;
-    {
-        ofstream ofs("serialized");
-        boost::archive::text_oarchive oa(ofs);
-        oa << factorize_vars;
-    }
-    PrintTimestamp();
-    cout << endl;
-    */
-
     // Stochastic Gradient Descent
     cout << "Training the data" << endl << endl;
     Train();
@@ -79,48 +68,60 @@ void Train(){
     //We need to initialize total_err and old_err
     //to two different values
     double total_err;
-    double old_err;
+    double total_reg_err;
+    double old_reg_err;
 
     //Used to accurately do gradient descent since we update user_f and
     //then do item_f, but we need to use the old user_f
-    double u_old;
+    //double u_old;
 
     //Train one feature at a time
     for(int n = 0; n < FEATURES; n++){
-        total_err = DBL_MAX/1.125;
-        old_err = DBL_MAX;
+        total_reg_err = DBL_MAX/1.125;
+        old_reg_err = DBL_MAX;
+        total_err = 0;
         cout << "Feature " << n << endl;
-        // Loop until total_err is under ERR_THRESH (error threshold global var)
-        // while(!(-ERR_THRESH < old_err - total_err < ERR_THRESH))
-        // and while old_err > total_err
+        // Loop until total_reg_err is under ERR_THRESH (error threshold global var)
+        // while(!(-ERR_THRESH < old_reg_err - total_reg_err < ERR_THRESH))
+        // and while old_reg_err > total_reg_err
         do{
-            old_err = total_err;
-            total_err = 0.0;
+            old_reg_err = total_reg_err;
+            total_reg_err = 0.0;
             // 1-step gradient descent
             // loop through all existing riu once
-            cout << "One Step Gradient Descent" << endl;
+            //cout << "One Step Gradient Descent" << endl;
             for(int i = 0; i < ITEMS; i++){
                 for(unsigned int j = 0; j < parse_vars.items_v[i].size(); j++){
                     unsigned int item = parse_vars.items_v[i].at(j).item;
                     unsigned int uid = parse_vars.items_v[i].at(j).uid;
-                    double err = factorize_vars.res_err[i].at(j) - 
-                        (factorize_vars.item_f[item-1][n] * factorize_vars.user_f[uid-1][n]);
-                    total_err += (pow(err,2) + K *  ((factorize_vars.mag_item[item-1] + pow(factorize_vars.item_f[item-1][n],2)) + 
-                                                    factorize_vars.mag_user[uid-1] + pow(factorize_vars.user_f[uid-1][n],2)));
+
+                    double curr_res_err = factorize_vars.res_err[i].at(j); // The cached residual error
+
+                    double item_feat = factorize_vars.item_f[item-1][n]; // *_feat is the value of the current feature
+                    double user_feat = factorize_vars.user_f[uid-1][n];
+                    double product_feat = item_feat * user_feat;
+
+                    double err = curr_res_err - (product_feat);
+
+                    double item_mag = factorize_vars.mag_item[item-1]; // *_mag is the value of the magnitude of features 1-(n-1) 
+                    double user_mag = factorize_vars.mag_user[uid-1];
+
+                    total_err = pow(err,2);
+                    total_reg_err += (total_err + K * ((item_mag + pow(item_feat,2)) + user_mag + pow(user_feat,2))); // regularized square error
                     
-                    u_old = factorize_vars.user_f[uid-1][n];
-                    factorize_vars.user_f[uid-1][n] += lrate * (err * factorize_vars.item_f[item-1][n] - K * u_old);
-                    factorize_vars.item_f[item-1][n] += lrate * (err * u_old - K * factorize_vars.item_f[item-1][n]);
+                    factorize_vars.user_f[uid-1][n] += lrate * (err * item_feat - K * user_feat);
+                    factorize_vars.item_f[item-1][n] += lrate * (err * user_feat - K * item_feat);
                 }
             }
-            cout << "Total Error: " << total_err << endl;
-            cout << "Old Error: " << old_err << endl;
-            cout << "Difference: " << old_err - total_err << endl;
-            PrintTimestamp();
-            cout << endl;
-        }while( !((old_err - total_err) < ERR_THRESH && (old_err - total_err) > (ERR_THRESH_LOW)) 
-            && old_err > total_err);
-        cout << "Trained feature " << n << endl;
+            //cout << "Regularized Total Error: " << total_reg_err << endl;
+            //cout << "Regularized Old Error: " << old_reg_err << endl;
+            //cout << "Difference: " << old_reg_err - total_reg_err << endl;
+            //PrintTimestamp();
+            //cout << endl;
+        }while( !((old_reg_err - total_reg_err) < ERR_THRESH && (old_reg_err - total_reg_err) > (ERR_THRESH_LOW)) 
+            /*&& old_reg_err > total_reg_err*/);
+
+        cout << "Trained feature " << n+1 << endl;
         UpdateResErr(n);
         UpdateMags(n);
 
@@ -149,13 +150,13 @@ void Train(){
  * user/item vector for feature n
  */
 void UpdateMags(int n){
-    for(int i = 0; i < n; i++){
-        for(int j = 0; j < ITEMS; j++){
-            factorize_vars.mag_item[j] += pow(factorize_vars.item_f[j][n],2);
-        }
-        for(int j = 0; j < USERS; j++){
-            factorize_vars.mag_user[j] += pow(factorize_vars.user_f[j][n],2);
-        }
+    for(int j = 0; j < ITEMS; j++){
+        double feat = factorize_vars.item_f[j][n];
+        factorize_vars.mag_item[j] += pow(feat,2);
+    }
+    for(int j = 0; j < USERS; j++){
+        double feat = factorize_vars.user_f[j][n];
+        factorize_vars.mag_user[j] += pow(feat,2);
     }
 }
 
@@ -189,7 +190,9 @@ void UpdateResErr(short n){
         for(unsigned int j = 0; j < factorize_vars.res_err[i].size(); j++){
             unsigned int item = parse_vars.items_v[i].at(j).item;
             unsigned int uid = parse_vars.items_v[i].at(j).uid;
-            double residual = (factorize_vars.item_f[item-1][n] * factorize_vars.user_f[uid-1][n]);
+            double item_feat = factorize_vars.item_f[item-1][n];
+            double user_feat = factorize_vars.user_f[uid-1][n];
+            double residual = (item_feat * user_feat);
             double old_rating = factorize_vars.res_err[i].at(j);
             double new_rating = old_rating - residual;
             factorize_vars.res_err[i].at(j) = new_rating;
@@ -205,7 +208,8 @@ void UpdateResErr(short n){
 void ResErrInit(){
     for(int i = 0; i < ITEMS; i++){
         for(unsigned int j = 0; j < parse_vars.items_v[i].size(); j++){
-            factorize_vars.res_err[i].push_back(parse_vars.items_v[i].at(j).rating);
+            double rating = parse_vars.items_v[i].at(j).rating;
+            factorize_vars.res_err[i].push_back(rating);
         }
     }
 }

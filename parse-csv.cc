@@ -90,6 +90,16 @@ void ProcessFiles(){
         }
     }
 
+    if(PRINT_VECARR){
+        // Print the array of vectors
+        for(int i = 0; i < ITEMS; i++){
+            for(cell n : parse_vars.items_v[i]){
+                cout << "item " << n.item << ", user " << n.uid << ", rating " << n.rating << endl;
+            }
+            cout << endl;
+        }
+    }
+
     cout << "File read process complete" << endl;
     PrintTimestamp();
     cout << endl;
