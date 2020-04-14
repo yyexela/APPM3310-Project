@@ -88,7 +88,7 @@ void Train(){
         total_reg_err = DBL_MAX/1.125;
         old_reg_err = DBL_MAX;
         total_err = 0;
-        cout << "Feature " << n << endl;
+        cout << "Feature " << n+1 << endl;
 
         // Loop until total_reg_err is within +/- ERR_THRESH of 0
         while( !((old_reg_err - total_reg_err) < ERR_THRESH && (old_reg_err - total_reg_err) > (ERR_THRESH_LOW)) ){
