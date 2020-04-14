@@ -10,10 +10,6 @@ using namespace std;
 Parse parse_vars;
 Factorize factorize_vars;
 
-
-const double lrate = 0.001;
-const double K = 0.02;
-
 int main(int argc, char* argv[]){
     ofstream wfs("time.log", ofstream::out | ofstream::trunc);
     wfs << "Features: " << FEATURES << endl;
@@ -124,8 +120,8 @@ void Train(){
 
                     total_reg_err += (pow(err,2) + K * ((item_mag + pow(item_feat,2)) + user_mag + pow(user_feat,2))); // regularized square error
                     
-                    factorize_vars.user_f[uid-1][n] += lrate * (err * item_feat - K * user_feat);
-                    factorize_vars.item_f[item-1][n] += lrate * (err * user_feat - K * item_feat);
+                    factorize_vars.user_f[uid-1][n] += LRATE * (err * item_feat - K * user_feat);
+                    factorize_vars.item_f[item-1][n] += LRATE * (err * user_feat - K * item_feat);
                 }
             }
             /*
@@ -165,8 +161,7 @@ void Train(){
         cout << "Saving item_f and user_f" << endl;
 
         {
-            string file = "SerializedFeatures/serialized";
-            file.append(to_string(n));
+            string file = "serialized";
             ofstream ofs(file);
             boost::archive::text_oarchive oa(ofs);
             oa << factorize_vars;

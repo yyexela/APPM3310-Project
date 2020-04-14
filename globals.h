@@ -18,4 +18,19 @@
 #define ERR_THRESH 0.00001
 #define ERR_THRESH_LOW -0.00001
 
+// Booleans used to print debug info
+#define DEBUG false
+#define DEBUG_UID false
+#define DEBUG_SPLINE false
+#define DEBUG_UPDATE_VARR false
+#define DISABLE_CHECKS true
+#define PROCESS_UID false
+#define PRINT_VECARR false
+#define DISABLE_AVGS true
+#define PREDICT_FINAL true
+
+// Gradient descent constants
+#define LRATE 0.001
+#define K 0.02
+
 #endif

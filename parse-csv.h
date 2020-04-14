@@ -17,17 +17,6 @@ struct cell{
     int item;
 };
 
-// Booleans used to print debug info
-const bool DEBUG = false;
-const bool DEBUG_UID = false;
-const bool DEBUG_SPLINE = false;
-const bool DEBUG_UPDATE_VARR = false;
-const bool DISABLE_CHECKS = true;
-const bool PROCESS_UID = false;
-const bool PRINT_VECARR = false;
-const bool DISABLE_AVGS = true;
-const bool PREDICT_FINAL = true;
-
 // Forward declarations
 void SparseLine(string line);
 void UIDMapLine(string line);
