@@ -21,28 +21,31 @@ void ProcessFiles(){
     // string used to store lines
     string line;
 
-    cout << "Processing uid maps" << endl;
+    if(PROCESS_UID){
+        cout << "Processing uid maps" << endl;
 
-    // Open file, check if failed
-    ifs.open(UIDMAP_FILE);
-    if(!ifs.is_open()){
-        cout << "File \"" << UIDMAP_FILE << "\" failed to open" << endl;
-        exit(1);
+        // Open file, check if failed
+        ifs.open(UIDMAP_FILE);
+        if(!ifs.is_open()){
+            cout << "File \"" << UIDMAP_FILE << "\" failed to open" << endl;
+            exit(1);
+        }
+        // Read file contents
+        while(ifs.good()){
+            getline(ifs, line);
+            // Ignore empty lines
+            if(line.size() > 0)
+                UIDMapLine(line);
+        }
+
+        // Close UIDMAP_FILE
+        ifs.close();
+
+        cout << "Processed uid maps, inserted " << parse_vars.old2newuid_map.size() << " elements" << endl;
+        PrintTimestamp();
+        cout << endl;
     }
-    // Read file contents
-    while(ifs.good()){
-        getline(ifs, line);
-        // Ignore empty lines
-        if(line.size() > 0)
-            UIDMapLine(line);
-    }
 
-    // Close UIDMAP_FILE
-    ifs.close();
-
-    cout << "Processed uid maps, inserted " << parse_vars.old2newuid_map.size() << " elements" << endl;
-    PrintTimestamp();
-    cout << endl;
     cout << "Processing sparse_matrix file" << endl;
 
     // Counts the number of lines processed

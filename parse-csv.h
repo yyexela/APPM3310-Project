@@ -24,6 +24,7 @@ const bool DEBUG_UID = false;
 const bool DEBUG_SPLINE = false;
 const bool DEBUG_UPDATE_VARR = false;
 const bool DISABLE_CHECKS = false;
+const bool PROCESS_UID = false;
 
 // Forward declarations
 void SparseLine(string line);
@@ -39,8 +40,8 @@ bool TestSample();
 
 
 // Files to read from
-const string SPARSE_FILE = "InputCSV/sparse_matrix_coords_and_values.csv";
-const string UIDMAP_FILE = "InputCSV/userID_map.csv";
+const string SPARSE_FILE = "InputCSV/testsparse_matrix_coords_and_values.csv";
+const string UIDMAP_FILE = "InputCSV/testuserID_map.csv";
 
 class Parse{
     public:
@@ -53,7 +54,8 @@ class Parse{
     clock_t start = std::clock();
     clock_t prev_time = start;
 
-    // Item array of vectors for better caching
+    // Item array of vectors:
+    // There are ITEMS items with a vector of ratings by users for each item
     vector <cell> items_v[ITEMS]; 
 };
 
