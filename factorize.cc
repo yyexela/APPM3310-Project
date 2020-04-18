@@ -32,8 +32,10 @@ int main(int argc, char* argv[]){
 
         // Reset the other structures in factorize_vars
         ResErrInit();
-        UpdateMags(1);
-        UpdateResErr(1);
+        for(int i = 0; i < FEAT_DONE; ++i){
+            UpdateMags(i);
+            UpdateResErr(i);
+        }
 
 
         PrintTimestamp();
