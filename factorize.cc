@@ -11,32 +11,50 @@ Parse parse_vars;
 Factorize factorize_vars;
 
 int main(int argc, char* argv[]){
-    ofstream wfs("time.log", ofstream::out | ofstream::trunc);
-    wfs << "Features: " << FEATURES << endl;
-    wfs << "Threshold: " << ERR_THRESH << endl;
-    wfs << "Vector init: " << FEATURE_INIT << endl;
-    wfs << endl;
-    wfs << "Start time: " << clock() / (double) CLOCKS_PER_SEC << endl;
-    wfs.close();
+    if(! (LOAD_SERIALIZED) ){
+        ofstream wfs("time.log", ofstream::out | ofstream::trunc);
+        wfs << "Features: " << FEATURES << endl;
+        wfs << "Threshold: " << ERR_THRESH << endl;
+        wfs << "Vector init: " << FEATURE_INIT << endl;
+        wfs << endl;
+        wfs << "Start time: " << clock() / (double) CLOCKS_PER_SEC << endl;
+        wfs.close();
+    }
 
     // Load in the files
     ProcessFiles();
     
-    // Initialize user/item feature vectors
-    cout << "Initializing user/item feature vectors" << endl;
-    FeatureInit();
-    PrintTimestamp();
-    cout << endl;
+    if(LOAD_SERIALIZED){
+        cout << "Loading data from \"serialized\"" << endl;
+        ifstream ifs("serialized");
+        boost::archive::text_iarchive ia(ifs);
+        ia >> factorize_vars;
 
-    cout << "Initializing res_err array of vectors to riu" << endl;
-    ResErrInit();
-    if(ResErrSize() != VArrSize()){
-        cout << "ERROR: Mismatched VArrSize and ResArrSize" << endl;
-        exit(1);
+        // Reset the other structures in factorize_vars
+        ResErrInit();
+        UpdateMags(1);
+        UpdateResErr(1);
+
+
+        PrintTimestamp();
+        cout << endl;
+    } else {
+        // Initialize user/item feature vectors
+        cout << "Initializing user/item feature vectors" << endl;
+        FeatureInit();
+        PrintTimestamp();
+        cout << endl;
+
+        cout << "Initializing res_err array of vectors to riu" << endl;
+        ResErrInit();
+        if(ResErrSize() != VArrSize()){
+            cout << "ERROR: Mismatched VArrSize and ResArrSize" << endl;
+            exit(1);
+        }
+
+        PrintTimestamp();
+        cout << endl;
     }
-
-    PrintTimestamp();
-    cout << endl;
 
     // Stochastic Gradient Descent
     cout << "Training the data" << endl << endl;
@@ -84,14 +102,16 @@ void Train(){
     double old_reg_err;
 
     //Train one feature at a time
-    for(int n = 0; n < FEATURES; n++){
+    for(int n = FEAT_DONE; n < FEATURES; n++){
         total_reg_err = DBL_MAX/1.125;
         old_reg_err = DBL_MAX;
         total_err = 0;
         cout << "Feature " << n+1 << endl;
 
         // Loop until total_reg_err is within +/- ERR_THRESH of 0
-        while( !((old_reg_err - total_reg_err) < ERR_THRESH && (old_reg_err - total_reg_err) > (ERR_THRESH_LOW)) ){
+        // OR old_reg_err < total_reg_err
+        while( !((old_reg_err - total_reg_err) < ERR_THRESH && (old_reg_err - total_reg_err) > (ERR_THRESH_LOW))
+            && (old_reg_err > total_reg_err) ){
             old_reg_err = total_reg_err;
             total_reg_err = 0.0;
             // 1-step gradient descent
@@ -124,13 +144,16 @@ void Train(){
                     factorize_vars.item_f[item-1][n] += LRATE * (err * user_feat - K * item_feat);
                 }
             }
-            /*
-            cout << "Regularized Total Error: " << total_reg_err << endl;
-            cout << "Regularized Old Error: " << old_reg_err << endl;
-            cout << "Difference: " << old_reg_err - total_reg_err << endl;
-            PrintTimestamp();
-            cout << endl;
-            */
+            if(PRINT_STEP){
+                cout << "Regularized Total Error: " << total_reg_err << endl;
+                cout << "Regularized Old Error: " << old_reg_err << endl;
+                cout << "Difference: " << old_reg_err - total_reg_err << endl;
+                PrintTimestamp();
+                cout << endl;
+            }
+        }
+        if(old_reg_err <= total_reg_err){
+            cout << "Couldn't minimize difference more than " << abs(old_reg_err - total_reg_err) << endl;
         }
         
         UpdateResErr(n);
@@ -152,6 +175,9 @@ void Train(){
         wfs << "Trained feature " << (n+1) << ". Elapsed time: " << (clock() - parse_vars.start) / (double) CLOCKS_PER_SEC << endl;
         wfs << "Total error: " << total_err << endl;
         wfs << "Total regularized error: " << total_reg_err << endl;
+        if(old_reg_err <= total_reg_err){
+            wfs << "Couldn't minimize difference more than " << abs(old_reg_err - total_reg_err) << endl;
+        }
         wfs << endl;
         wfs.close();
 
