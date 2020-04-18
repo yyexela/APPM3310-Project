@@ -18,6 +18,9 @@
 #define ERR_THRESH 0.00001
 #define ERR_THRESH_LOW -0.00001
 
+//Number of times to run through a single feature for training
+#define EPOCHS 120
+
 // Booleans used to print debug info
 #define DEBUG false
 #define DEBUG_UID false

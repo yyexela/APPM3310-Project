@@ -16,6 +16,7 @@ int main(int argc, char* argv[]){
         wfs << "Features: " << FEATURES << endl;
         wfs << "Threshold: " << ERR_THRESH << endl;
         wfs << "Vector init: " << FEATURE_INIT << endl;
+        wfs << "Epochs: " << EPOCHS << endl;
         wfs << endl;
         wfs << "Start time: " << clock() / (double) CLOCKS_PER_SEC << endl;
         wfs.close();
@@ -108,12 +109,10 @@ void Train(){
         total_reg_err = DBL_MAX/1.125;
         old_reg_err = DBL_MAX;
         total_err = 0;
-        cout << "Feature " << n+1 << endl;
+        cout << "Feature " << n+1 << endl << endl;
 
-        // Loop until total_reg_err is within +/- ERR_THRESH of 0
-        // OR old_reg_err < total_reg_err
-        while( !((old_reg_err - total_reg_err) < ERR_THRESH && (old_reg_err - total_reg_err) > (ERR_THRESH_LOW))
-            && (old_reg_err > total_reg_err) ){
+        //Run through EPOCHS steps per feature
+        for(int step = 0; step < EPOCHS; step++){
             old_reg_err = total_reg_err;
             total_reg_err = 0.0;
             // 1-step gradient descent
@@ -150,12 +149,10 @@ void Train(){
                 cout << "Regularized Total Error: " << total_reg_err << endl;
                 cout << "Regularized Old Error: " << old_reg_err << endl;
                 cout << "Difference: " << old_reg_err - total_reg_err << endl;
+                cout << "Step: " << step+1 << endl;
                 PrintTimestamp();
                 cout << endl;
             }
-        }
-        if(old_reg_err <= total_reg_err){
-            cout << "Couldn't minimize difference more than " << abs(old_reg_err - total_reg_err) << endl;
         }
         
         UpdateResErr(n);
