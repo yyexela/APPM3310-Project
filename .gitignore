@@ -44,3 +44,6 @@ userID_map.csv
 # Log files
 time*.log
 *serialized*
+
+# GCC vect file
+*.vect
