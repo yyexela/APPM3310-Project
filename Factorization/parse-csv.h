@@ -33,8 +33,8 @@ void MakeAvgUser();
 
 
 // Files to read from
-const string SPARSE_FILE = "InputCSV/sparse_matrix_coords_and_values.csv";
-const string UIDMAP_FILE = "InputCSV/userID_map.csv";
+const string SPARSE_FILE = "../InputCSV/sparse_matrix_coords_and_values.csv";
+const string UIDMAP_FILE = "../InputCSV/userID_map.csv";
 
 class Parse{
     public:
