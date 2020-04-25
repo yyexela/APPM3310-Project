@@ -2,7 +2,7 @@
 #define _globals_h_
 
 // Features amount
-#define FEATURES 40
+#define FEATURES 180
 
 // Predefined user/item feature vector value
 #define FEATURE_INIT 0.1
@@ -19,7 +19,7 @@
 #define ERR_THRESH_LOW -0.00001
 
 //Number of times to run through a single feature for training
-#define EPOCHS 120
+#define EPOCHS 240
 
 // Booleans used to print debug info
 #define DEBUG false
@@ -32,6 +32,7 @@
 #define DISABLE_AVGS true
 #define PREDICT_FINAL false
 #define PRINT_STEP true
+#define SAVE_PER_FEAT false
 
 // Gradient descent constants
 #define LRATE 0.001

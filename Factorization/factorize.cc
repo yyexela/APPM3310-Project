@@ -183,17 +183,17 @@ void Train(){
         PrintTimestamp();
         cout << endl;
 
-        cout << "Saving item_f and user_f" << endl;
-
-        {
-            string file = "serialized";
-            ofstream ofs(file);
-            boost::archive::text_oarchive oa(ofs);
-            oa << factorize_vars;
+        if(SAVE_PER_FEAT){
+            cout << "Saving item_f and user_f" << endl;
+            {
+                string file = "serialized";
+                ofstream ofs(file);
+                boost::archive::text_oarchive oa(ofs);
+                oa << factorize_vars;
+            }
+            PrintTimestamp();
+            cout << endl;
         }
-
-        PrintTimestamp();
-        cout << endl;
     }
 }
 
