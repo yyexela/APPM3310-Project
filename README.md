@@ -4,7 +4,6 @@ Project for APPM 3310 at CU Boulder
 
 ## Group
 
-- Tyler Jensen
 - Jaden Wang
 - Alexey Yermakov
 
