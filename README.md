@@ -60,17 +60,17 @@ makefile
 
 clean_training.py
 
--Checks for redundancy and removes it, such as repetitive ratings from the same item-user pair, and converts txt files to csv.
+- Checks for redundancy and removes it, such as repetitive ratings from the same item-user pair, and converts txt files to csv.
 
 item_user_rating_sparse_matrix.m
 
--Combines all csv files into one csv file with move ID, compact user ID, and ratings as columns, and creates a map between original user ID and compact user ID
+- Combines all csv files into one csv file with move ID, compact user ID, and ratings as columns, and creates a map between original user ID and compact user ID
 
 removeProbe.m
 
--Removes probe dataset from the training dataset so we can use probe dataset as our testing set.
+- Removes probe dataset from the training dataset so we can use probe dataset as our testing set.
 
 probeRMSE.m
 
--Predicts all probe ratings using our trained P,Q matrices with clipping enabled, and calculates the RMSE of prediction error.
+- Predicts all probe ratings using our trained P,Q matrices with clipping enabled, and calculates the RMSE of prediction error.
 
