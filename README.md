@@ -7,12 +7,16 @@ Project for APPM 3310 at CU Boulder.
 - Alexey Yermakov
 - Jaden Wang
 
+## Final Report
+
+The comprehensive final report is listed as FinalReport.pdf in the top-level directory.
+
 ## Folders
 
 ### InputCSV
 
 testsparse_matrix_coords_and_values.csv
-* Sample file for the format of the real `sparse_matrix_coords_and_values.csv` file  .
+* Sample file for the format of the real `sparse_matrix_coords_and_values.csv` file.
   
 testuserID_map.csv
 * Sample file for the format of the real `userID_map.csv` file.
