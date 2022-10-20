@@ -1,6 +1,6 @@
 # MatrixProject
 
-Project for APPM 3310 at CU Boulder.
+Project for APPM 3310 at CU Boulder. The goal of this project was to follow in the footsteps of the winning team of the Netflix Prize competition in developing a recommender system for Netflix. We succeeded in doing this by scoring better than the benchmark Netflix set. Had we been a competing team, we would have been eligible for a cash prize.
 
 ## Group
 
